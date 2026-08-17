@@ -12,31 +12,23 @@ public class StationEssenceSwing {
 
     private static JPanel contentPanel;
     private static JFrame fenetre;
-    private static int mouseX, mouseY; // Pour le déplacement de la fenêtre
+    private static int mouseX, mouseY;
 
     public static void main(String[] args) {
-        
-        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
-        
-        
-        
         SwingUtilities.invokeLater(() -> {
             fenetre = new JFrame();
             fenetre.setSize(1150, 750);
             fenetre.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             fenetre.setLayout(new BorderLayout());
 
-            // --- TRANSPARENCE POUR LES COINS RONDS ---
             fenetre.setUndecorated(true);
             fenetre.setBackground(new Color(0, 0, 0, 0));
 
-            // --- BARRE DE TITRE PERSONNALISÉE (AVEC DÉPLACEMENT) ---
             JPanel barreTitre = new JPanel(new BorderLayout());
             barreTitre.setOpaque(false);
             barreTitre.setPreferredSize(new Dimension(1150, 55));
             barreTitre.setBorder(new EmptyBorder(0, 25, 0, 20));
 
-            // --- GESTION DU DÉPLACEMENT DE LA FENÊTRE ---
             barreTitre.addMouseListener(new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
                     mouseX = e.getX();
@@ -51,20 +43,15 @@ public class StationEssenceSwing {
                 }
             });
 
-            // --- TITRE DE L'APPLICATION ---
-            JLabel titreApp = new JLabel("Station Essence");
+            JLabel titreApp = new JLabel("Application Desktop");
             titreApp.setFont(new Font("Segoe UI", Font.BOLD, 18));
             titreApp.setForeground(Color.WHITE);
 
-            // --- LES 3 BOUTONS RONDS (Dessinés à la main) ---
             JPanel boutonsControle = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 8));
             boutonsControle.setOpaque(false);
 
-            // Bouton Réduire (Rond Jaune)
             JButton btnMin = new JButton() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
+                @Override protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(255, 204, 0));
@@ -74,16 +61,10 @@ public class StationEssenceSwing {
                 }
             };
             btnMin.setPreferredSize(new Dimension(28, 28));
-            btnMin.setBorderPainted(false);
-            btnMin.setContentAreaFilled(false);
-            btnMin.setFocusPainted(false);
             btnMin.addActionListener(e -> fenetre.setState(JFrame.ICONIFIED));
 
-            // Bouton Agrandir (Rond Vert)
             JButton btnMax = new JButton() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
+                @Override protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(0, 204, 0));
@@ -93,22 +74,13 @@ public class StationEssenceSwing {
                 }
             };
             btnMax.setPreferredSize(new Dimension(28, 28));
-            btnMax.setBorderPainted(false);
-            btnMax.setContentAreaFilled(false);
-            btnMax.setFocusPainted(false);
             btnMax.addActionListener(e -> {
-                if (fenetre.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
-                    fenetre.setExtendedState(JFrame.NORMAL);
-                } else {
-                    fenetre.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                }
+                if (fenetre.getExtendedState() == JFrame.MAXIMIZED_BOTH) fenetre.setExtendedState(JFrame.NORMAL);
+                else fenetre.setExtendedState(JFrame.MAXIMIZED_BOTH);
             });
 
-            // Bouton Fermer (Rond Rouge)
             JButton btnClose = new JButton() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
+                @Override protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(255, 60, 60));
@@ -118,9 +90,6 @@ public class StationEssenceSwing {
                 }
             };
             btnClose.setPreferredSize(new Dimension(28, 28));
-            btnClose.setBorderPainted(false);
-            btnClose.setContentAreaFilled(false);
-            btnClose.setFocusPainted(false);
             btnClose.addActionListener(e -> System.exit(0));
 
             boutonsControle.add(btnMin);
@@ -130,11 +99,8 @@ public class StationEssenceSwing {
             barreTitre.add(titreApp, BorderLayout.WEST);
             barreTitre.add(boutonsControle, BorderLayout.EAST);
 
-            // --- MENU LATÉRAL BLEU ---
             JPanel menuPanel = new JPanel() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
+                @Override protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(40, 80, 200));
@@ -146,8 +112,8 @@ public class StationEssenceSwing {
             menuPanel.setPreferredSize(new Dimension(240, 750));
             menuPanel.setBorder(new EmptyBorder(60, 20, 20, 20));
 
-            JLabel titreMenu = new JLabel("<html><center><font color='white' size='5'>⛽<br>STATION<br>ESSENCE</font></center></html>");
-            titreMenu.setAlignmentX(Component.LEFT_ALIGNMENT);
+            JLabel titreMenu = new JLabel("<html><center><font color='white' size='4'>⛽<br><b>Application<br>Desktop</b></font></center></html>");
+            titreMenu.setAlignmentX(Component.CENTER_ALIGNMENT);
             menuPanel.add(titreMenu);
             menuPanel.add(Box.createVerticalStrut(40));
 
@@ -157,12 +123,10 @@ public class StationEssenceSwing {
                 "Statistiques", "Recettes"
             };
 
-            // --- CONTENU DROITE AVEC COINS RONDS ---
             contentPanel = new JPanel(new CardLayout());
             contentPanel.setBackground(new Color(245, 247, 250));
             contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
-            // --- AJOUT DE TOUTES LES PAGES (Pour qu'elles s'affichent toutes !) ---
             contentPanel.add(new PageTableauBord(), "Tableau de bord");
             contentPanel.add(new PageProduits(), "Produits");
             contentPanel.add(new PageStock(), "Entrées de stock");
@@ -172,7 +136,6 @@ public class StationEssenceSwing {
             contentPanel.add(new PageStatistiques(), "Statistiques");
             contentPanel.add(new PageRecettes(), "Recettes");
 
-            // --- BOUTONS DU MENU (DYNAMIQUES) ---
             for (String nom : nomsPages) {
                 JButton btn = creerBoutonMenuStylise(nom);
                 btn.addActionListener(e -> {
@@ -183,11 +146,8 @@ public class StationEssenceSwing {
                 menuPanel.add(Box.createVerticalStrut(10));
             }
 
-            // --- PANNEAU PRINCIPAL ---
             JPanel mainPanel = new JPanel(new BorderLayout()) {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
+                @Override protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(40, 80, 200));
@@ -204,7 +164,6 @@ public class StationEssenceSwing {
         });
     }
 
-    // --- MÉTHODE POUR CRÉER UN BOUTON STYLÉ ---
     private static JButton creerBoutonMenuStylise(String texte) {
         JButton btn = new JButton(texte);
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -218,12 +177,10 @@ public class StationEssenceSwing {
         btn.setBorder(new EmptyBorder(5, 15, 5, 15));
 
         btn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
+            @Override public void mouseEntered(MouseEvent e) {
                 btn.setBackground(new Color(60, 110, 255));
             }
-            @Override
-            public void mouseExited(MouseEvent e) {
+            @Override public void mouseExited(MouseEvent e) {
                 btn.setBackground(new Color(40, 80, 200));
             }
         });

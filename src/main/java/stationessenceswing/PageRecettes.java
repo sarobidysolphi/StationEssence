@@ -4,7 +4,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PageRecettes extends JPanel {
     private JLabel labelTotal;
@@ -23,7 +26,6 @@ public class PageRecettes extends JPanel {
         JPanel content = new JPanel(new GridLayout(1, 2, 20, 0));
         content.setBackground(new Color(245, 247, 250));
 
-        // GAUCHE : Recette totale (Grand, moderne)
         JPanel totalPanel = new JPanel(new GridBagLayout());
         totalPanel.setBackground(Color.WHITE);
         totalPanel.setBorder(BorderFactory.createTitledBorder(" Recette totale "));
@@ -33,7 +35,6 @@ public class PageRecettes extends JPanel {
         totalPanel.add(labelTotal);
         content.add(totalPanel);
 
-        // DROITE : Top 5 clients
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.WHITE);
         topPanel.setBorder(BorderFactory.createTitledBorder(" 🏆 Top 5 meilleurs clients "));
