@@ -15,6 +15,11 @@ public class StationEssenceSwing {
     private static int mouseX, mouseY; // Pour le déplacement de la fenêtre
 
     public static void main(String[] args) {
+        
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
+        
+        
+        
         SwingUtilities.invokeLater(() -> {
             fenetre = new JFrame();
             fenetre.setSize(1150, 750);

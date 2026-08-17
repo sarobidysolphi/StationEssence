@@ -5,7 +5,6 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.properties.UnitValue;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,120 +16,98 @@ public class PageEntretiens extends JPanel {
     private JTextField champNom, champVoiture;
     private JCheckBox chkLavage, chkGonflage, chkVidange, chkGraissage;
     private JLabel labelTotal;
+    private JTextArea zoneReçu;
 
     public PageEntretiens() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 245, 245));
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBackground(new Color(245, 247, 250));
+        setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titre = new JLabel("Fiche d'entretien");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
         add(titre, BorderLayout.NORTH);
 
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(Color.WHITE);
+        JPanel contenu = new JPanel(new GridLayout(1, 2, 20, 0));
+        contenu.setBackground(new Color(245, 247, 250));
+
+        // Gauche : Formulaire
+        JPanel form = new JPanel(new GridLayout(6, 2, 10, 10));
         form.setBorder(BorderFactory.createTitledBorder(" Informations client "));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        gbc.gridx = 0; gbc.gridy = 0; form.add(new JLabel("Nom du client :"), gbc);
-        gbc.gridx = 1; champNom = new JTextField(20); form.add(champNom, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 1; form.add(new JLabel("Voiture (immatriculation) :"), gbc);
-        gbc.gridx = 1; champVoiture = new JTextField(20); form.add(champVoiture, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 2; form.add(new JLabel("Services :"), gbc);
-
+        form.add(new JLabel("Nom du client :")); form.add(champNom = new JTextField());
+        form.add(new JLabel("Voiture :")); form.add(champVoiture = new JTextField());
+        form.add(new JLabel("Services :"));
         JPanel checkPanel = new JPanel(new GridLayout(4, 1));
-        checkPanel.setBackground(Color.WHITE);
-        chkLavage = new JCheckBox("Lavage — 20 000 Ar");
-        chkGonflage = new JCheckBox("Gonflage — 2 000 Ar");
-        chkVidange = new JCheckBox("Vidange — 35 000 Ar");
-        chkGraissage = new JCheckBox("Graissage — 10 000 Ar");
+        chkLavage = new JCheckBox("Lavage 20 000 Ar");
+        chkGonflage = new JCheckBox("Gonflage 2 000 Ar");
+        chkVidange = new JCheckBox("Vidange 35 000 Ar");
+        chkGraissage = new JCheckBox("Graissage 10 000 Ar");
         checkPanel.add(chkLavage); checkPanel.add(chkGonflage); checkPanel.add(chkVidange); checkPanel.add(chkGraissage);
+        form.add(checkPanel);
+        form.add(new JLabel("Total :")); form.add(labelTotal = new JLabel("0 Ar", SwingConstants.CENTER));
+        contenu.add(form);
 
-        javax.swing.event.ChangeListener listener = e -> calculerTotal();
-        chkLavage.addChangeListener(listener);
-        chkGonflage.addChangeListener(listener);
-        chkVidange.addChangeListener(listener);
-        chkGraissage.addChangeListener(listener);
+        // Droite : Aperçu du reçu
+        JPanel recuPanel = new JPanel(new BorderLayout());
+        recuPanel.setBorder(BorderFactory.createTitledBorder(" Aperçu du reçu "));
+        zoneReçu = new JTextArea();
+        zoneReçu.setEditable(false);
+        zoneReçu.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        zoneReçu.setText("Remplissez le formulaire pour voir le reçu.");
+        recuPanel.add(new JScrollPane(zoneReçu), BorderLayout.CENTER);
+        contenu.add(recuPanel);
 
-        gbc.gridx = 1; gbc.gridy = 2; gbc.gridheight = 4; form.add(checkPanel, gbc);
+        add(contenu, BorderLayout.CENTER);
 
-        gbc.gridx = 0; gbc.gridy = 6; gbc.gridheight = 1; form.add(new JLabel("Total :"), gbc);
-        gbc.gridx = 1; labelTotal = new JLabel("0 Ar"); labelTotal.setFont(new Font("Segoe UI", Font.BOLD, 20)); labelTotal.setForeground(new Color(46, 125, 50)); form.add(labelTotal, gbc);
+        // Bas : Bouton
+        JPanel bas = new JPanel();
+        JButton btnPDF = new JButton("Générer le PDF");
+        btnPDF.setBackground(new Color(40, 80, 200));
+        btnPDF.setForeground(Color.WHITE);
+        btnPDF.setFocusPainted(false);
+        btnPDF.addActionListener(e -> genererPDF());
+        bas.add(btnPDF);
+        add(bas, BorderLayout.SOUTH);
 
-        gbc.gridx = 1; gbc.gridy = 7; 
-        JButton btnValider = new JButton("📄 Générer le PDF");
-        btnValider.setBackground(new Color(46, 125, 50)); btnValider.setForeground(Color.WHITE); btnValider.setFocusPainted(false); btnValider.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnValider.addActionListener(e -> genererPDF());
-        form.add(btnValider, gbc);
-
-        add(form, BorderLayout.CENTER);
+        // Mise à jour du reçu en temps réel
+        javax.swing.event.ChangeListener update = e -> mettreAJourRecu();
+        chkLavage.addChangeListener(update); chkGonflage.addChangeListener(update);
+        chkVidange.addChangeListener(update); chkGraissage.addChangeListener(update);
     }
 
-    private void calculerTotal() {
+    private void mettreAJourRecu() {
         int total = 0;
-        if (chkLavage.isSelected()) total += 20000;
-        if (chkGonflage.isSelected()) total += 2000;
-        if (chkVidange.isSelected()) total += 35000;
-        if (chkGraissage.isSelected()) total += 10000;
+        StringBuilder sb = new StringBuilder("--- REÇU ---\nClient : " + champNom.getText() + "\nVoiture : " + champVoiture.getText() + "\n\n");
+        if (chkLavage.isSelected()) { sb.append("Lavage : 20 000 Ar\n"); total += 20000; }
+        if (chkGonflage.isSelected()) { sb.append("Gonflage : 2 000 Ar\n"); total += 2000; }
+        if (chkVidange.isSelected()) { sb.append("Vidange : 35 000 Ar\n"); total += 35000; }
+        if (chkGraissage.isSelected()) { sb.append("Graissage : 10 000 Ar\n"); total += 10000; }
+        sb.append("\nTOTAL : ").append(total).append(" Ar");
+        zoneReçu.setText(sb.toString());
         labelTotal.setText(total + " Ar");
     }
 
     private void genererPDF() {
         String nom = champNom.getText().trim();
         String voiture = champVoiture.getText().trim();
-        if (nom.isEmpty() || voiture.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Veuillez remplir le nom et la voiture !");
-            return;
-        }
+        if (nom.isEmpty() || voiture.isEmpty()) { JOptionPane.showMessageDialog(this, "Remplissez le formulaire !"); return; }
         int total = Integer.parseInt(labelTotal.getText().replace(" Ar", ""));
-        if (total == 0) {
-            JOptionPane.showMessageDialog(this, "Veuillez cocher au moins un service !");
-            return;
-        }
-
-        DonneesMemoire.recetteDuJour += total;
-
         try {
-            // Chemin sécurisé vers le bureau
-          String chemin = "C:\\Users\\Solphi\\OneDrive\\Desktop\\recu_entretien.pdf";
+            String chemin = System.getProperty("user.home") + "\\Desktop\\recu_entretien.pdf";
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
-            PdfDocument pdfDoc = new PdfDocument(writer);
-            Document document = new Document(pdfDoc);
-
-            document.add(new Paragraph("STATION ESSENCE").setBold().setFontSize(20));
-            document.add(new Paragraph("Reçu d'entretien").setFontSize(16));
-            document.add(new Paragraph("Date : " + LocalDate.now()));
-            document.add(new Paragraph("Client : " + nom));
-            document.add(new Paragraph("Voiture : " + voiture));
-
-            document.add(new Paragraph("\n"));
-            Table table = new Table(UnitValue.createPercentArray(new float[]{400, 150}));
-            table.addCell("Service");
-            table.addCell("Montant");
-
+            PdfDocument pdf = new PdfDocument(writer);
+            Document doc = new Document(pdf);
+            doc.add(new Paragraph("STATION ESSENCE").setBold());
+            doc.add(new Paragraph("Reçu d'entretien\n"));
+            doc.add(new Paragraph("Client : " + nom + "\nVoiture : " + voiture + "\n"));
+            Table table = new Table(2);
+            table.addCell("Service"); table.addCell("Montant");
             if (chkLavage.isSelected()) { table.addCell("Lavage"); table.addCell("20 000 Ar"); }
             if (chkGonflage.isSelected()) { table.addCell("Gonflage"); table.addCell("2 000 Ar"); }
             if (chkVidange.isSelected()) { table.addCell("Vidange"); table.addCell("35 000 Ar"); }
             if (chkGraissage.isSelected()) { table.addCell("Graissage"); table.addCell("10 000 Ar"); }
-
-            document.add(table);
-            document.add(new Paragraph("\n"));
-            document.add(new Paragraph("TOTAL : " + total + " Ar").setBold().setFontSize(16));
-
-            document.close();
-
-            JOptionPane.showMessageDialog(this, "✅ PDF généré sur votre Bureau !\nFichier : recu_entretien.pdf");
-
-            champNom.setText(""); champVoiture.setText("");
-            chkLavage.setSelected(false); chkGonflage.setSelected(false); chkVidange.setSelected(false); chkGraissage.setSelected(false);
-            labelTotal.setText("0 Ar");
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erreur : " + e.getMessage());
-        }
+            doc.add(table); doc.add(new Paragraph("\nTOTAL : " + total + " Ar"));
+            doc.close();
+            JOptionPane.showMessageDialog(this, "PDF généré sur le bureau !");
+        } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erreur : " + e.getMessage()); }
     }
 }

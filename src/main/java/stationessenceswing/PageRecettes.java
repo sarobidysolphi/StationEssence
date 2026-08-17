@@ -4,78 +4,64 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PageRecettes extends JPanel {
-    
     private JLabel labelTotal;
     private DefaultTableModel modelTop;
 
     public PageRecettes() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 245, 245));
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBackground(new Color(245, 247, 250));
+        setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel titre = new JLabel("Recettes & Statistiques");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        JLabel titre = new JLabel("📊 Recettes & Performances");
+        titre.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titre.setForeground(new Color(30, 30, 30));
         add(titre, BorderLayout.NORTH);
 
         JPanel content = new JPanel(new GridLayout(1, 2, 20, 0));
-        content.setBackground(new Color(245, 245, 245));
+        content.setBackground(new Color(245, 247, 250));
 
-        // -- GAUCHE : Recette totale --
-        JPanel recettePanel = new JPanel(new BorderLayout());
-        recettePanel.setBackground(Color.WHITE);
-        recettePanel.setBorder(BorderFactory.createTitledBorder(" Recette totale "));
-        
+        // GAUCHE : Recette totale (Grand, moderne)
+        JPanel totalPanel = new JPanel(new GridBagLayout());
+        totalPanel.setBackground(Color.WHITE);
+        totalPanel.setBorder(BorderFactory.createTitledBorder(" Recette totale "));
         labelTotal = new JLabel("0 Ar", SwingConstants.CENTER);
-        labelTotal.setFont(new Font("Segoe UI", Font.BOLD, 30));
-        labelTotal.setForeground(new Color(46, 125, 50));
-        recettePanel.add(labelTotal, BorderLayout.CENTER);
-        content.add(recettePanel);
+        labelTotal.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        labelTotal.setForeground(new Color(40, 80, 200));
+        totalPanel.add(labelTotal);
+        content.add(totalPanel);
 
-        // -- DROITE : Top 5 meilleurs clients --
+        // DROITE : Top 5 clients
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.WHITE);
-        topPanel.setBorder(BorderFactory.createTitledBorder(" Top 5 meilleurs clients "));
-        
+        topPanel.setBorder(BorderFactory.createTitledBorder(" 🏆 Top 5 meilleurs clients "));
         String[] cols = {"RANG", "NOM", "DÉPENSES"};
         modelTop = new DefaultTableModel(new Object[][]{}, cols);
-        JTable tableTop = new JTable(modelTop);
-        tableTop.setRowHeight(35);
-        topPanel.add(new JScrollPane(tableTop), BorderLayout.CENTER);
+        JTable table = new JTable(modelTop);
+        table.setRowHeight(35);
+        table.getTableHeader().setBackground(new Color(40, 80, 200));
+        table.getTableHeader().setForeground(Color.WHITE);
+        topPanel.add(new JScrollPane(table), BorderLayout.CENTER);
         content.add(topPanel);
 
         add(content, BorderLayout.CENTER);
-        
-        // À chaque fois que la page est créée ou réaffichée, on met à jour !
         rafraichir();
     }
-    
-    // --- MÉTHODE DE RAFRAÎCHISSEMENT (L'appeler à chaque clic) ---
+
     public void rafraichir() {
-        System.out.println("Rafraîchissement de la page Recettes..."); // Pour vérifier dans la console
-        
-        // 1. Mise à jour du montant total
         labelTotal.setText(DonneesMemoire.recetteDuJour + " Ar");
-
-        // 2. Mise à jour du Top 5
-        modelTop.setRowCount(0); // On vide le tableau
-        
-        Map<String, Integer> mapClients = new HashMap<>();
+        modelTop.setRowCount(0);
+        Map<String, Integer> map = new HashMap<>();
         for (DonneesMemoire.Vente v : DonneesMemoire.historiqueVentes) {
-            mapClients.put(v.nomClient, mapClients.getOrDefault(v.nomClient, 0) + v.montant);
+            map.put(v.nomClient, map.getOrDefault(v.nomClient, 0) + v.montant);
         }
-        
-        List<Map.Entry<String, Integer>> list = new ArrayList<>(mapClients.entrySet());
-        list.sort((a, b) -> b.getValue().compareTo(a.getValue())); // Tri décroissant
-
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(map.entrySet());
+        list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
         for (int i = 0; i < Math.min(5, list.size()); i++) {
-            var entry = list.get(i);
-            modelTop.addRow(new Object[]{i + 1, entry.getKey(), entry.getValue() + " Ar"});
+            var e = list.get(i);
+            modelTop.addRow(new Object[]{i + 1, e.getKey(), e.getValue() + " Ar"});
         }
     }
 }
