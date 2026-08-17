@@ -2,9 +2,10 @@ package stationessenceswing;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.ArrayList;
+import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 public class PageProduits extends JPanel {
@@ -14,98 +15,78 @@ public class PageProduits extends JPanel {
 
     public PageProduits() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 245, 245));
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBackground(new Color(245, 247, 250));
+        setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // Titre
         JLabel titre = new JLabel("Gestion des produits");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titre.setForeground(new Color(30, 30, 30));
         add(titre, BorderLayout.NORTH);
 
-        // --- BARRE D'OUTILS (Recherche + Nouveau) ---
+        // Barre d'outils
         JPanel outilPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
-        outilPanel.setBackground(new Color(245, 245, 245));
-
-        // 1. Le champ de recherche (C'est ici que la magie opère pour le LIKE % %)
+        outilPanel.setBackground(new Color(245, 247, 250));
         champRecherche = new JTextField("Rechercher un produit...", 20);
         champRecherche.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        // Ajout d'un écouteur qui déclenche la recherche à chaque frappe clavier
-        champRecherche.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filtrerTableau(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filtrerTableau(); }
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filtrerTableau(); }
-        });
-
-        // 2. Le bouton Nouveau
         JButton btnNouveau = new JButton("+ Nouveau");
-        btnNouveau.setBackground(new Color(30, 45, 40));
+        btnNouveau.setBackground(new Color(40, 80, 200));
         btnNouveau.setForeground(Color.WHITE);
         btnNouveau.setFocusPainted(false);
         btnNouveau.addActionListener(e -> ajouterProduit());
-
         outilPanel.add(champRecherche);
         outilPanel.add(btnNouveau);
         add(outilPanel, BorderLayout.CENTER);
 
-        // --- TABLEAU ---
-        String[] colonnes = {"Numéro", "Désignation", "Stock (L)"};
-        modele = new DefaultTableModel(new Object[][]{}, colonnes) {
-            @Override 
-            public boolean isCellEditable(int row, int col) { 
-                return false; 
+        // Tableau arrondi
+        JPanel tableContainer = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+                g2.setColor(new Color(220, 220, 220));
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
             }
         };
+        tableContainer.setLayout(new BorderLayout());
+        tableContainer.setOpaque(false);
+        tableContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        String[] colonnes = {"Numéro", "Désignation", "Stock (L)"};
+        modele = new DefaultTableModel(new Object[][]{}, colonnes) {
+            @Override public boolean isCellEditable(int row, int col) { return false; }
+        };
         tableau = new JTable(modele);
-        tableau.setRowHeight(30);
+        tableau.setRowHeight(35);
+        tableau.setBackground(Color.WHITE);
+        tableau.getTableHeader().setBackground(new Color(40, 80, 200));
+        tableau.getTableHeader().setForeground(Color.WHITE);
         tableau.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        JScrollPane scrollPane = new JScrollPane(tableau);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        add(scrollPane, BorderLayout.SOUTH);
+        JScrollPane scroll = new JScrollPane(tableau);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(Color.WHITE);
+        tableContainer.add(scroll, BorderLayout.CENTER);
+        add(tableContainer, BorderLayout.SOUTH);
 
-        // Chargement initial
         rafraichirTableau();
     }
 
-    // --- AJOUTER UN PRODUIT ---
     private void ajouterProduit() {
         String nom = JOptionPane.showInputDialog(this, "Nom du nouveau produit :");
         if (nom == null || nom.trim().isEmpty()) return;
-
         int nouvelId = DonneesMemoire.listeProduits.size() + 1;
         DonneesMemoire.listeProduits.add(new DonneesMemoire.Produit(nouvelId, nom, 0, 10, 1000));
-        
-        JOptionPane.showMessageDialog(this, "Produit '" + nom + "' ajouté avec succès !");
         rafraichirTableau();
     }
 
-    // --- RAFRAÎCHIR LE TABLEAU (Affiche tout) ---
     private void rafraichirTableau() {
         modele.setRowCount(0);
         for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
             modele.addRow(new Object[]{p.numProd, p.designation, p.stock});
-        }
-    }
-
-    // --- FILTRER LE TABLEAU (La fameuse méthode LIKE % %) ---
-    private void filtrerTableau() {
-        String recherche = champRecherche.getText().trim().toLowerCase();
-        modele.setRowCount(0); // On vide le tableau
-
-        // Si la recherche est vide ou contient le texte par défaut, on affiche tout
-        if (recherche.isEmpty() || recherche.equals("rechercher un produit...")) {
-            rafraichirTableau();
-            return;
-        }
-
-        // On parcourt la liste des produits en mémoire
-        for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
-            // Ici, on simule le "LIKE %mot%". 
-            // Si le nom du produit CONTIENT le texte tapé (même en minuscule), on l'affiche.
-            if (p.designation.toLowerCase().contains(recherche)) {
-                modele.addRow(new Object[]{p.numProd, p.designation, p.stock});
-            }
         }
     }
 }

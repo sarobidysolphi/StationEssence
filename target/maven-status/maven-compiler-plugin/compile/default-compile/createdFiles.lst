@@ -5,13 +5,16 @@ stationessenceswing\PageRecettes.class
 stationessenceswing\PageProduits.class
 stationessenceswing\PageProduits$2.class
 stationessenceswing\StationEssenceSwing$3.class
+stationessenceswing\StationEssenceSwing$8.class
 stationessenceswing\DonneesMemoire$Service.class
 stationessenceswing\PageProduits$1.class
 stationessenceswing\ConnexionBD.class
 stationessenceswing\PageVente$1.class
 stationessenceswing\StationEssenceSwing.class
 stationessenceswing\PageServices$2.class
+stationessenceswing\StationEssenceSwing$5.class
 stationessenceswing\DonneesMemoire$Produit.class
+stationessenceswing\StationEssenceSwing$7.class
 stationessenceswing\PageServices.class
 stationessenceswing\PageStatistiques$1.class
 stationessenceswing\StationEssenceSwing$2.class
@@ -21,7 +24,9 @@ stationessenceswing\PageTableauBord.class
 stationessenceswing\PageStock$1.class
 stationessenceswing\PageVente$2.class
 stationessenceswing\PageVente.class
+stationessenceswing\StationEssenceSwing$4.class
 stationessenceswing\DonneesMemoire.class
 stationessenceswing\PageStatistiques.class
+stationessenceswing\StationEssenceSwing$6.class
 stationessenceswing\DonneesMemoire$Vente.class
 stationessenceswing\Theme.class
