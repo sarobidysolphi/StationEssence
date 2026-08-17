@@ -152,20 +152,20 @@ public class StationEssenceSwing {
                 "Statistiques", "Recettes"
             };
 
-            // --- CONTENU DROITE ---
+            // --- CONTENU DROITE AVEC COINS RONDS ---
             contentPanel = new JPanel(new CardLayout());
             contentPanel.setBackground(new Color(245, 247, 250));
             contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
-            // AJOUT DES PAGES (Seul le tableau de bord est stylisé pour l'instant)
+            // --- AJOUT DE TOUTES LES PAGES (Pour qu'elles s'affichent toutes !) ---
             contentPanel.add(new PageTableauBord(), "Tableau de bord");
-            contentPanel.add(new JPanel(), "Produits");
-            contentPanel.add(new JPanel(), "Entrées de stock");
-            contentPanel.add(new JPanel(), "Vente carburant");
-            contentPanel.add(new JPanel(), "Services");
-            contentPanel.add(new JPanel(), "Entretiens");
-            contentPanel.add(new JPanel(), "Statistiques");
-            contentPanel.add(new JPanel(), "Recettes");
+            contentPanel.add(new PageProduits(), "Produits");
+            contentPanel.add(new PageStock(), "Entrées de stock");
+            contentPanel.add(new PageVente(), "Vente carburant");
+            contentPanel.add(new PageServices(), "Services");
+            contentPanel.add(new PageEntretiens(), "Entretiens");
+            contentPanel.add(new PageStatistiques(), "Statistiques");
+            contentPanel.add(new PageRecettes(), "Recettes");
 
             // --- BOUTONS DU MENU (DYNAMIQUES) ---
             for (String nom : nomsPages) {
@@ -199,6 +199,7 @@ public class StationEssenceSwing {
         });
     }
 
+    // --- MÉTHODE POUR CRÉER UN BOUTON STYLÉ ---
     private static JButton creerBoutonMenuStylise(String texte) {
         JButton btn = new JButton(texte);
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
