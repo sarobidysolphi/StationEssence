@@ -4,16 +4,25 @@ import java.awt.Color;
 import java.awt.Font;
 
 public class Theme {
-    // --- COULEURS EXACTES DE VOTRE THEME ---
-    public static final Color FOND_PRINCIPAL = new Color(15, 23, 42);       // #0f172a (Bleu nuit profond)
-    public static final Color FOND_CARTE     = new Color(30, 41, 59);       // #1e293b (Bleu ardoise)
-    public static final Color TEXTE_PRINCIPAL = Color.WHITE;                // #ffffff
-    public static final Color TEXTE_SECONDAIRE = new Color(255, 255, 255, 180); // Gris clair
-    public static final Color ACCENT_VERT     = new Color(50, 205, 50);     // #32CD32 (Vert citron)
-    public static final Color BORDURE_VERRE   = new Color(255, 255, 255, 30); // Bordure subtile
+    // Couleurs du menu Google Drive style
+    public static final Color MENU_BLEU = new Color(40, 80, 200);    // Bleu vif
+    public static final Color MENU_FOND = new Color(30, 60, 160);    // Bleu foncé
     
-    // --- POLICES ---
-    public static final Font POLICE_TITRE = new Font("Segoe UI", Font.BOLD, 26);
-    public static final Font POLICE_BOUTON = new Font("Segoe UI", Font.BOLD, 14);
-    public static final Font POLICE_TEXTE = new Font("Segoe UI", Font.PLAIN, 14);
+    // Couleurs du contenu
+    public static final Color FOND_CLAIR = new Color(245, 247, 250); // Gris très clair
+    public static final Color CARTE_BLANCHE = Color.WHITE;
+    
+    // Accents
+    public static final Color BLEU_ACCENT = new Color(40, 80, 200);
+    public static final Color VERT_ACCENT = new Color(76, 175, 80);
+    public static final Color ROUGE_ACCENT = new Color(220, 50, 50);
+    
+    // Textes
+    public static final Color TEXTE_FONCE = new Color(30, 30, 30);
+    public static final Color TEXTE_CLAIR = Color.WHITE;
+    public static final Color TEXTE_SECONDAIRE = new Color(100, 100, 100);
+    
+    // Polices
+    public static final Font POLICE_TITRE = new Font("Segoe UI", Font.BOLD, 24);
+    public static final Font POLICE_NORMALE = new Font("Segoe UI", Font.PLAIN, 14);
 }
