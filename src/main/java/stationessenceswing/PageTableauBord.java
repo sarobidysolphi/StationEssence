@@ -3,59 +3,56 @@ package stationessenceswing;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 
 public class PageTableauBord extends JPanel {
     public PageTableauBord() {
         setLayout(new BorderLayout());
-        setBackground(Theme.FOND_CARTE);
-        setBorder(new EmptyBorder(30, 30, 30, 30));
+        setBackground(Theme.FOND_CLAIR);
+        setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titre = new JLabel("Tableau de bord");
         titre.setFont(Theme.POLICE_TITRE);
-        titre.setForeground(Theme.TEXTE_PRINCIPAL);
+        titre.setForeground(Theme.TEXTE_FONCE);
         add(titre, BorderLayout.NORTH);
 
         JPanel cartes = new JPanel(new GridLayout(1, 4, 20, 0));
-        cartes.setBackground(Theme.FOND_CARTE);
+        cartes.setBackground(Theme.FOND_CLAIR);
         cartes.setBorder(new EmptyBorder(20, 0, 20, 0));
-        cartes.add(creerCarte("0 Ar", "Recette du jour", Theme.ACCENT_VERT, Color.GREEN));
-        cartes.add(creerCarte("865 L", "Stock total", Theme.ACCENT_VERT, Color.GREEN));
-        cartes.add(creerCarte("0", "Produits en alerte", Theme.TEXTE_PRINCIPAL, Color.GREEN));
-        cartes.add(creerCarte("3", "Produits référencés", Theme.TEXTE_PRINCIPAL, new Color(255, 152, 0)));
-        add(cartes, BorderLayout.CENTER);
 
-        JPanel stocks = new JPanel();
-        stocks.setLayout(new BoxLayout(stocks, BoxLayout.Y_AXIS));
-        stocks.setBackground(Theme.FOND_PRINCIPAL);
-        stocks.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Theme.BORDURE_VERRE), " Stock actuel "));
-        stocks.add(creerLigneStock("Essence", "530 L"));
-        stocks.add(creerLigneStock("Gasoil", "245 L"));
-        stocks.add(creerLigneStock("Pétrole", "90 L"));
-        add(stocks, BorderLayout.SOUTH);
+        cartes.add(creerCarteArrondie("0 Ar", "Recette du jour", Theme.BLEU_ACCENT));
+        cartes.add(creerCarteArrondie("865 L", "Stock total", Theme.BLEU_ACCENT));
+        cartes.add(creerCarteArrondie("0", "Produits en alerte", Theme.BLEU_ACCENT));
+        cartes.add(creerCarteArrondie("3", "Produits référencés", Theme.BLEU_ACCENT));
+        add(cartes, BorderLayout.CENTER);
     }
-    
-    private JPanel creerCarte(String v, String d, Color c, Color b) {
-        JPanel carte = new JPanel(); 
+
+    // Nouvelle méthode pour créer des cartes avec coins arrondis
+    private JPanel creerCarteArrondie(String valeur, String description, Color accent) {
+        JPanel carte = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+            }
+        };
         carte.setLayout(new BoxLayout(carte, BoxLayout.Y_AXIS));
-        carte.setBackground(Theme.FOND_PRINCIPAL);
-        carte.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10,10,10,10), BorderFactory.createLineBorder(b, 1)));
-        JLabel val = new JLabel(v); val.setFont(new Font("Segoe UI", Font.BOLD, 22)); val.setForeground(c);
-        JLabel desc = new JLabel(d); desc.setFont(new Font("Segoe UI", Font.PLAIN, 14)); desc.setForeground(Theme.TEXTE_SECONDAIRE);
-        carte.add(val); carte.add(Box.createVerticalStrut(5)); carte.add(desc); return carte;
-    }
-    
-    private JPanel creerLigneStock(String n, String q) {
-        JPanel ligne = new JPanel(new BorderLayout()); 
-        ligne.setBackground(Theme.FOND_PRINCIPAL);
-        ligne.setBorder(new EmptyBorder(8, 15, 8, 15));
-        JLabel nom = new JLabel("🛢️ " + n); 
-        nom.setFont(new Font("Segoe UI", Font.BOLD, 15)); 
-        nom.setForeground(Theme.TEXTE_PRINCIPAL);
-        JLabel qte = new JLabel(q); 
-        qte.setFont(new Font("Segoe UI", Font.BOLD, 15)); 
-        qte.setForeground(Theme.ACCENT_VERT);
-        ligne.add(nom, BorderLayout.WEST); 
-        ligne.add(qte, BorderLayout.EAST); 
-        return ligne;
+        carte.setOpaque(false);
+        carte.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel val = new JLabel(valeur);
+        val.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        val.setForeground(accent);
+        JLabel desc = new JLabel(description);
+        desc.setFont(Theme.POLICE_NORMALE);
+        desc.setForeground(Theme.TEXTE_SECONDAIRE);
+        
+        carte.add(val);
+        carte.add(Box.createVerticalStrut(5));
+        carte.add(desc);
+        return carte;
     }
 }
