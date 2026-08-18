@@ -26,7 +26,6 @@ public class PageStock extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 20, 0));
         contenu.setBackground(new Color(245, 247, 250));
 
-        // Formulaire
         JPanel formulaire = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -62,7 +61,6 @@ public class PageStock extends JPanel {
 
         contenu.add(formulaire);
 
-        // Historique
         JPanel histPanel = new JPanel(new BorderLayout());
         histPanel.setBackground(Color.WHITE);
         histPanel.setBorder(BorderFactory.createTitledBorder(" Historique des entrées "));
@@ -79,7 +77,6 @@ public class PageStock extends JPanel {
 
         add(contenu, BorderLayout.CENTER);
 
-        // Actions
         comboProduits.addActionListener(e -> mettreAJourStockAvant());
         btnValider.addActionListener(e -> validerEntree());
 
@@ -98,7 +95,6 @@ public class PageStock extends JPanel {
         });
     }
 
-    // --- MÉTHODE PUBLIQUE POUR METTRE À JOUR LA LISTE DÉROULANTE ---
     public void remplirCombo() {
         comboProduits.removeAllItems();
         for (var p : DonneesMemoire.chargerProduits()) {

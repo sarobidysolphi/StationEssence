@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
-import java.util.List;
 
 public class PageTableauBord extends JPanel {
 
@@ -16,13 +15,11 @@ public class PageTableauBord extends JPanel {
         setBackground(new Color(245, 247, 250));
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Titre
         JLabel titre = new JLabel("Tableau de bord");
         titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titre.setForeground(new Color(30, 30, 30));
         add(titre, BorderLayout.NORTH);
 
-        // Cartes du haut
         JPanel cartesPanel = new JPanel(new GridLayout(1, 4, 15, 0));
         cartesPanel.setBackground(new Color(245, 247, 250));
         cartesPanel.setBorder(new EmptyBorder(15, 0, 15, 0));
@@ -39,7 +36,6 @@ public class PageTableauBord extends JPanel {
 
         add(cartesPanel, BorderLayout.CENTER);
 
-        // Section du bas (Stock actuel + Alertes)
         JPanel basPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         basPanel.setBackground(new Color(245, 247, 250));
 
@@ -57,7 +53,6 @@ public class PageTableauBord extends JPanel {
         basPanel.add(alertesPanel);
         add(basPanel, BorderLayout.SOUTH);
 
-        // Premier chargement
         rafraichir();
     }
 
@@ -89,29 +84,22 @@ public class PageTableauBord extends JPanel {
     }
 
     public void rafraichir() {
-        // 1. Recette du jour
         labelRecette.setText(DonneesMemoire.recetteDuJour + " Ar");
 
-        // 2. Stock total
         int stockTotal = 0;
         for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) stockTotal += p.stock;
         labelStockTotal.setText(stockTotal + " L");
 
-        // 3. Produits en alerte
         int alerte = 0;
         for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
             if (p.stock < p.seuil) alerte++;
         }
         labelAlertes.setText(String.valueOf(alerte));
-
-        // 4. Produits référencés
         labelReferences.setText(String.valueOf(DonneesMemoire.chargerProduits().size()));
 
-        // 5. Mise à jour des listes du bas
         stockPanel.removeAll();
         alertesPanel.removeAll();
 
-        // Liste des produits
         for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
             JPanel ligne = new JPanel(new BorderLayout());
             ligne.setBackground(Color.WHITE);
@@ -128,7 +116,6 @@ public class PageTableauBord extends JPanel {
         stockPanel.revalidate();
         stockPanel.repaint();
 
-        // Liste des alertes
         boolean aDesAlertes = false;
         for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
             if (p.stock < p.seuil) {

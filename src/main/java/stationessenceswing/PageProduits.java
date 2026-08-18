@@ -8,7 +8,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
-import java.util.List;
 
 public class PageProduits extends JPanel {
     private DefaultTableModel modele;
@@ -28,7 +27,6 @@ public class PageProduits extends JPanel {
         JPanel outilPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
         outilPanel.setBackground(new Color(245, 247, 250));
 
-        // UTILISATION DU PLACEHOLDER ICI
         champRecherche = new PlaceholderTextField("Rechercher un produit...");
         champRecherche.setPreferredSize(new Dimension(200, 30));
         champRecherche.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -99,7 +97,8 @@ public class PageProduits extends JPanel {
         rafraichirTableau();
     }
 
-    private void rafraichirTableau() {
+    // --- CHANGÉ EN PUBLIC POUR PERMETTRE L'APPEL DEPUIS LE MENU ---
+    public void rafraichirTableau() {
         modele.setRowCount(0);
         String recherche = champRecherche.getText().toLowerCase();
         for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {

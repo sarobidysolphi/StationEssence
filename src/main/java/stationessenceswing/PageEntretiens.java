@@ -22,7 +22,6 @@ public class PageEntretiens extends JPanel {
     private JTable tableau;
     private JButton btnPDF;
     
-    // Liste dynamique des cases à cocher
     private List<JCheckBox> checkBoxServices = new ArrayList<>();
     private JPanel checkPanel;
 
@@ -38,7 +37,6 @@ public class PageEntretiens extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 20, 0));
         contenu.setBackground(new Color(245, 247, 250));
 
-        // --- Formulaire (Gauche) ---
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
         form.setBorder(BorderFactory.createTitledBorder(" Informations client "));
@@ -55,7 +53,6 @@ public class PageEntretiens extends JPanel {
         gbc.gridx = 0; gbc.gridy = 2; form.add(new JLabel("Services :"), gbc);
         gbc.gridx = 1; gbc.gridy = 2;
         
-        // --- GÉNÉRATION DYNAMIQUE DES SERVICES ---
         checkPanel = new JPanel(new GridLayout(0, 1));
         checkPanel.setBackground(Color.WHITE);
         genererCheckBoxes();
@@ -66,7 +63,6 @@ public class PageEntretiens extends JPanel {
 
         contenu.add(form);
 
-        // --- Reçu + Historique (Droite) ---
         JPanel droite = new JPanel(new BorderLayout());
         
         JPanel recuPanel = new JPanel(new BorderLayout());
@@ -109,7 +105,6 @@ public class PageEntretiens extends JPanel {
 
         add(contenu, BorderLayout.CENTER);
 
-        // --- ACTIONS ---
         javax.swing.event.ChangeListener update = e -> calculerTotal();
         for (JCheckBox chk : checkBoxServices) {
             chk.addChangeListener(update);
@@ -130,7 +125,6 @@ public class PageEntretiens extends JPanel {
         });
     }
 
-    // --- MÉTHODE POUR GÉNÉRER LES CHECKBOXES DYNAMIQUEMENT ---
     private void genererCheckBoxes() {
         checkBoxServices.clear();
         checkPanel.removeAll();
@@ -154,7 +148,6 @@ public class PageEntretiens extends JPanel {
         }
         labelTotal.setText(total + " Ar");
 
-        // Mise à jour du reçu
         String nom = champNom.getText().trim();
         String voiture = champVoiture.getText().trim();
         String recu = "*********************************\n";

@@ -20,7 +20,6 @@ public class PageVente extends JPanel {
     private JTable tableau;
     private JTextArea zoneReçu;
     private JButton btnPDF;
-    private boolean venteEnCours = false;
 
     public PageVente() {
         setLayout(new BorderLayout());
@@ -34,7 +33,6 @@ public class PageVente extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 20, 0));
         contenu.setBackground(new Color(245, 247, 250));
 
-        // --- FORMULAIRE ---
         JPanel formulaire = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -73,7 +71,6 @@ public class PageVente extends JPanel {
 
         contenu.add(formulaire);
 
-        // --- ZONE D'AFFICHAGE DU REÇU ---
         JPanel recuPanel = new JPanel(new BorderLayout());
         recuPanel.setBackground(Color.WHITE);
         recuPanel.setBorder(BorderFactory.createTitledBorder(" Reçu de vente "));
@@ -95,7 +92,6 @@ public class PageVente extends JPanel {
         basRecu.add(btnPDF);
         recuPanel.add(basRecu, BorderLayout.SOUTH);
 
-        // --- HISTORIQUE ---
         JPanel histPanel = new JPanel(new BorderLayout());
         histPanel.setBackground(Color.WHITE);
         histPanel.setBorder(BorderFactory.createTitledBorder(" Historique des ventes "));
@@ -179,9 +175,7 @@ public class PageVente extends JPanel {
             DonneesMemoire.recetteDuJour += total;
             DonneesMemoire.Vente vente = new DonneesMemoire.Vente(client, p.designation, litres, total);
             DonneesMemoire.historiqueVentes.add(vente);
-            venteEnCours = true;
 
-            // --- Affichage du reçu ---
             String recu = "*********************************\n";
             recu += "       STATION ESSENCE\n";
             recu += "*********************************\n";

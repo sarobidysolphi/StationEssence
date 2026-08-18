@@ -5,7 +5,6 @@ import java.util.List;
 
 public class DonneesMemoire {
 
-    // --- PRODUIT ---
     public static class Produit {
         public int numProd;
         public String designation;
@@ -22,7 +21,6 @@ public class DonneesMemoire {
         }
     }
 
-    // --- SERVICE ---
     public static class Service {
         public int numSery;
         public String nom;
@@ -35,7 +33,6 @@ public class DonneesMemoire {
         }
     }
 
-    // --- VENTE ---
     public static class Vente {
         public String nomClient;
         public String produit;
@@ -52,7 +49,6 @@ public class DonneesMemoire {
         }
     }
 
-    // --- ENTREE (Stock) ---
     public static class Entree {
         public String produit;
         public int quantite;
@@ -65,7 +61,6 @@ public class DonneesMemoire {
         }
     }
 
-    // --- ENTRETIEN ---
     public static class Entretien {
         public String nomClient;
         public String voiture;
@@ -80,7 +75,6 @@ public class DonneesMemoire {
         }
     }
 
-    // --- LISTES STATIQUES EN MÉMOIRE (TOUTES VIDES AU DÉMARRAGE) ---
     public static List<Produit> listeProduits = new ArrayList<>();
     public static List<Service> listeServices = new ArrayList<>();
     public static List<Vente> historiqueVentes = new ArrayList<>();
@@ -89,7 +83,6 @@ public class DonneesMemoire {
     
     public static int recetteDuJour = 0;
 
-    // --- MÉTHODES DE RÉCUPÉRATION ---
     public static List<Produit> chargerProduits() {
         return listeProduits;
     }
@@ -98,7 +91,6 @@ public class DonneesMemoire {
         return listeServices;
     }
 
-    // --- MÉTHODE POUR LES STATISTIQUES ---
     public static int[] getRecettes5DerniersMois() {
         int[] recettes = new int[5];
         int totalActuel = recetteDuJour;

@@ -2,10 +2,9 @@ package stationessenceswing;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
@@ -27,7 +26,6 @@ public class PageServices extends JPanel {
         JPanel outilPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
         outilPanel.setBackground(new Color(245, 247, 250));
 
-        // UTILISATION DU PLACEHOLDER ICI
         champRecherche = new PlaceholderTextField("Rechercher un service...");
         champRecherche.setPreferredSize(new Dimension(200, 30));
         champRecherche.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -103,7 +101,7 @@ public class PageServices extends JPanel {
         }
     }
 
-    private void rafraichirTableau() {
+    public void rafraichirTableau() {
         modele.setRowCount(0);
         String recherche = champRecherche.getText().toLowerCase();
         for (DonneesMemoire.Service s : DonneesMemoire.listeServices) {
