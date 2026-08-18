@@ -12,22 +12,34 @@ public class PageStatistiques extends JPanel {
 
     public PageStatistiques() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 247, 250));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(Theme.FOND_CLAIR);
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Theme.FOND_CLAIR);
+        headerPanel.setBorder(new EmptyBorder(10, 10, 20, 10));
 
         JLabel titre = new JLabel("Statistiques");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        add(titre, BorderLayout.NORTH);
-
+        titre.setFont(Theme.POLICE_TITRE);
         JLabel sousTitre = new JLabel("Recettes des 5 derniers mois");
-        sousTitre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        sousTitre.setForeground(Color.GRAY);
-        
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(new Color(245, 247, 250));
-        header.add(titre, BorderLayout.NORTH);
-        header.add(sousTitre, BorderLayout.SOUTH);
-        add(header, BorderLayout.NORTH);
+        sousTitre.setFont(Theme.POLICE_SOUS_TITRE);
+        sousTitre.setForeground(Theme.TEXTE_SECONDAIRE);
+        headerPanel.add(titre, BorderLayout.NORTH);
+        headerPanel.add(sousTitre, BorderLayout.SOUTH);
+        add(headerPanel, BorderLayout.NORTH);
+
+        JPanel chartCard = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
+            }
+        };
+        chartCard.setOpaque(false);
 
         graphiquePanel = new JPanel() {
             @Override
@@ -36,9 +48,11 @@ public class PageStatistiques extends JPanel {
                 dessinerGraphique(g);
             }
         };
-        graphiquePanel.setBackground(Color.WHITE);
+        graphiquePanel.setOpaque(false);
         graphiquePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        add(graphiquePanel, BorderLayout.CENTER);
+        chartCard.add(graphiquePanel, BorderLayout.CENTER);
+
+        add(chartCard, BorderLayout.CENTER);
     }
 
     private void dessinerGraphique(Graphics g) {
@@ -51,9 +65,13 @@ public class PageStatistiques extends JPanel {
         int maxVal = 1;
         for (int val : donnees) if (val > maxVal) maxVal = val;
 
-        g.setColor(new Color(200, 200, 200));
-        g.drawLine(xStart, yStart, xStart, hauteur + yStart);
-        g.drawLine(xStart, hauteur + yStart, largeur + xStart, hauteur + yStart);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2.setColor(Theme.BORDURE_CLAIRE);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawLine(xStart, yStart, xStart, hauteur + yStart);
+        g2.drawLine(xStart, hauteur + yStart, largeur + xStart, hauteur + yStart);
 
         int largeurBarre = 60;
         int espace = 40;
@@ -61,7 +79,6 @@ public class PageStatistiques extends JPanel {
 
         LocalDate dateCourante = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yy", new Locale("fr", "FR"));
-        g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
         for (int i = 0; i < donnees.length; i++) {
             int val = donnees[i];
@@ -71,16 +88,26 @@ public class PageStatistiques extends JPanel {
             int x = debutX + i * (largeurBarre + espace);
             int y = hauteur + yStart - hauteurBarre;
 
-            g.setColor(new Color(40, 80, 200));
-            g.fillRoundRect(x, y, largeurBarre, hauteurBarre, 10, 10);
+            // Ombre douce
+            g2.setColor(new Color(0, 122, 255, 20));
+            g2.fillRoundRect(x + 3, y + 3, largeurBarre, hauteurBarre, 12, 12);
 
-            g.setColor(Color.DARK_GRAY);
-            g.drawString(val + " Ar", x + 10, y - 10);
+            // Barre avec degradé bleu macOS
+            GradientPaint gradient = new GradientPaint(x, y, Theme.BLEU_ACCENT, x, hauteur + yStart, new Color(0, 90, 210));
+            g2.setPaint(gradient);
+            g2.fillRoundRect(x, y, largeurBarre, hauteurBarre, 12, 12);
 
+            // Valeur
+            g2.setColor(Theme.TEXTE_FONCE);
+            g2.setFont(Theme.POLICE_GRAS);
+            g2.drawString(String.format("%,d", val) + " Ar", x + 5, y - 10);
+
+            // Mois
             LocalDate moisDate = dateCourante.minusMonths(4 - i);
             String nomMois = moisDate.format(formatter);
-            g.setColor(Color.GRAY);
-            g.drawString(nomMois, x + 10, hauteur + yStart + 20);
+            g2.setColor(Theme.TEXTE_SECONDAIRE);
+            g2.setFont(Theme.POLICE_PETITE);
+            g2.drawString(nomMois, x + 10, hauteur + yStart + 20);
         }
     }
 

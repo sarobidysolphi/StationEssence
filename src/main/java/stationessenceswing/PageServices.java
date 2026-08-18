@@ -2,82 +2,80 @@ package stationessenceswing;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class PageServices extends JPanel {
     private DefaultTableModel modele;
-    private JTable tableau;
+    private StyledTable tableau;
     private PlaceholderTextField champRecherche;
 
     public PageServices() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 247, 250));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(Theme.FOND_CLAIR);
+        setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel titre = new JLabel("Gestion des services (CRUD)");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titre.setForeground(new Color(30, 30, 30));
-        add(titre, BorderLayout.NORTH);
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Theme.FOND_CLAIR);
+        headerPanel.setBorder(new EmptyBorder(10, 10, 20, 10));
 
-        JPanel outilPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
-        outilPanel.setBackground(new Color(245, 247, 250));
+        JLabel titre = new JLabel("Gestion des services");
+        titre.setFont(Theme.POLICE_TITRE);
+        titre.setForeground(Theme.TEXTE_FONCE);
+        JLabel sousTitre = new JLabel("Ajouter, modifier et supprimer des services");
+        sousTitre.setFont(Theme.POLICE_SOUS_TITRE);
+        sousTitre.setForeground(Theme.TEXTE_SECONDAIRE);
+        headerPanel.add(titre, BorderLayout.NORTH);
+        headerPanel.add(sousTitre, BorderLayout.SOUTH);
+        add(headerPanel, BorderLayout.NORTH);
 
-        champRecherche = new PlaceholderTextField("Rechercher un service...");
-        champRecherche.setPreferredSize(new Dimension(200, 30));
-        champRecherche.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JPanel outilPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        outilPanel.setBackground(Theme.FOND_CLAIR);
 
-        JButton btnNouveau = new JButton("+ Nouveau service");
-        btnNouveau.setBackground(new Color(40, 80, 200));
-        btnNouveau.setForeground(Color.WHITE);
-        btnNouveau.setFocusPainted(false);
-        btnNouveau.setBorderPainted(false);
-        btnNouveau.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnNouveau.setPreferredSize(new Dimension(150, 30));
+        champRecherche = new PlaceholderTextField("Rechercher...");
+        champRecherche.setPreferredSize(new Dimension(220, 34));
+        champRecherche.setFont(Theme.POLICE_NORMALE);
+
+        JButton btnNouveau = MacButton.primary("+ Nouveau service");
         btnNouveau.addActionListener(e -> ajouterService());
 
         outilPanel.add(champRecherche);
         outilPanel.add(btnNouveau);
-        add(outilPanel, BorderLayout.CENTER);
 
-        JPanel tableContainer = new JPanel() {
+        JPanel tableCard = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.WHITE);
-                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
-                g2.setColor(new Color(220, 220, 220));
-                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
             }
         };
-        tableContainer.setLayout(new BorderLayout());
-        tableContainer.setOpaque(false);
-        tableContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
+        tableCard.setOpaque(false);
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(outilPanel, BorderLayout.CENTER);
+        tableCard.add(topPanel, BorderLayout.NORTH);
 
         String[] colonnes = {"SERVICE", "PRIX (AR)", "ACTIONS"};
         modele = new DefaultTableModel(new Object[][]{}, colonnes) {
             @Override public boolean isCellEditable(int row, int col) { return col == 2; }
         };
-        tableau = new JTable(modele);
-        tableau.setRowHeight(50);
-        tableau.setBackground(Color.WHITE);
-        tableau.getTableHeader().setBackground(new Color(40, 80, 200));
-        tableau.getTableHeader().setForeground(Color.WHITE);
-        tableau.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-
+        tableau = new StyledTable(modele);
         tableau.getColumnModel().getColumn(2).setCellRenderer(new ButtonRenderer());
         tableau.getColumnModel().getColumn(2).setCellEditor(new ButtonEditor(new JCheckBox()));
 
         JScrollPane scroll = new JScrollPane(tableau);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(Color.WHITE);
-        tableContainer.add(scroll, BorderLayout.CENTER);
-        add(tableContainer, BorderLayout.SOUTH);
+        tableCard.add(scroll, BorderLayout.CENTER);
+
+        add(tableCard, BorderLayout.CENTER);
 
         rafraichirTableau();
 
@@ -106,27 +104,21 @@ public class PageServices extends JPanel {
         String recherche = champRecherche.getText().toLowerCase();
         for (DonneesMemoire.Service s : DonneesMemoire.listeServices) {
             if (!recherche.isEmpty() && !s.nom.toLowerCase().contains(recherche)) continue;
-            modele.addRow(new Object[]{s.nom, s.prix, "Actions"});
+            modele.addRow(new Object[]{s.nom, String.format("%,d", s.prix), "Actions"});
         }
     }
 
-    class ButtonRenderer extends JPanel implements TableCellRenderer {
+    class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
         private JButton btnModifier, btnSupprimer;
         public ButtonRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            setLayout(new FlowLayout(FlowLayout.CENTER, 4, 0));
             setBackground(Color.WHITE);
-            btnModifier = new JButton("Modifier");
-            btnModifier.setBackground(new Color(40, 80, 200));
-            btnModifier.setForeground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            btnModifier.setBorderPainted(false);
-            btnModifier.setPreferredSize(new Dimension(75, 25));
-            btnSupprimer = new JButton("Supprimer");
-            btnSupprimer.setBackground(new Color(200, 50, 50));
-            btnSupprimer.setForeground(Color.WHITE);
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
             btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            btnSupprimer.setBorderPainted(false);
-            btnSupprimer.setPreferredSize(new Dimension(80, 25));
             add(btnModifier); add(btnSupprimer);
         }
         @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -140,20 +132,14 @@ public class PageServices extends JPanel {
         private int currentRow;
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
             panel.setBackground(Color.WHITE);
-            btnModifier = new JButton("Modifier");
-            btnModifier.setBackground(new Color(40, 80, 200));
-            btnModifier.setForeground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            btnModifier.setBorderPainted(false);
-            btnModifier.setPreferredSize(new Dimension(75, 25));
-            btnSupprimer = new JButton("Supprimer");
-            btnSupprimer.setBackground(new Color(200, 50, 50));
-            btnSupprimer.setForeground(Color.WHITE);
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
             btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            btnSupprimer.setBorderPainted(false);
-            btnSupprimer.setPreferredSize(new Dimension(80, 25));
             panel.add(btnModifier); panel.add(btnSupprimer);
 
             btnModifier.addActionListener(e -> {

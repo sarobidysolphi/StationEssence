@@ -3,11 +3,7 @@ package stationessenceswing;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,80 +15,119 @@ public class PageRecettes extends JPanel {
 
     public PageRecettes() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 247, 250));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(Theme.FOND_CLAIR);
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Theme.FOND_CLAIR);
+        headerPanel.setBorder(new EmptyBorder(10, 10, 20, 10));
 
         JLabel titre = new JLabel("Recettes");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        add(titre, BorderLayout.NORTH);
+        titre.setFont(Theme.POLICE_TITRE);
+        JLabel sousTitre = new JLabel("Detail des recettes et top clients");
+        sousTitre.setFont(Theme.POLICE_SOUS_TITRE);
+        sousTitre.setForeground(Theme.TEXTE_SECONDAIRE);
+        headerPanel.add(titre, BorderLayout.NORTH);
+        headerPanel.add(sousTitre, BorderLayout.SOUTH);
+        add(headerPanel, BorderLayout.NORTH);
 
-        JPanel content = new JPanel(new GridLayout(1, 2, 20, 0));
-        content.setBackground(new Color(245, 247, 250));
+        JPanel content = new JPanel(new GridLayout(1, 2, 16, 0));
+        content.setBackground(Theme.FOND_CLAIR);
 
-        // -- GAUCHE : Détail des recettes --
-        JPanel detailPanel = new JPanel(new BorderLayout());
-        detailPanel.setBackground(Color.WHITE);
-        detailPanel.setBorder(BorderFactory.createTitledBorder(" Détail des recettes "));
-        String[] cols1 = {"DATE", "TYPE", "DÉTAIL", "MONTANT"};
+        // Detail
+        JPanel detailCard = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
+            }
+        };
+        detailCard.setOpaque(false);
+
+        JLabel detailTitre = new JLabel("   Detail des recettes");
+        detailTitre.setFont(Theme.POLICE_GRAS);
+        detailTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
+        detailCard.add(detailTitre, BorderLayout.NORTH);
+
+        String[] cols1 = {"DATE", "TYPE", "DETAIL", "MONTANT"};
         modelDetail = new DefaultTableModel(new Object[][]{}, cols1);
-        JTable table1 = new JTable(modelDetail);
-        table1.setRowHeight(30);
-        table1.getTableHeader().setBackground(new Color(40, 80, 200));
-        table1.getTableHeader().setForeground(Color.WHITE);
-        detailPanel.add(new JScrollPane(table1), BorderLayout.CENTER);
-        content.add(detailPanel);
+        JTable table1 = new StyledTable(modelDetail);
+        detailCard.add(new JScrollPane(table1), BorderLayout.CENTER);
 
-        // -- DROITE : Top 5 clients --
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.WHITE);
-        topPanel.setBorder(BorderFactory.createTitledBorder(" Top 5 meilleurs clients "));
-        String[] cols2 = {"RANG", "NOM", "DÉPENSES"};
-        modelTop = new DefaultTableModel(new Object[][]{}, cols2);
-        JTable table2 = new JTable(modelTop);
-        table2.setRowHeight(30);
-        table2.getTableHeader().setBackground(new Color(40, 80, 200));
-        table2.getTableHeader().setForeground(Color.WHITE);
-        topPanel.add(new JScrollPane(table2), BorderLayout.CENTER);
-        content.add(topPanel);
-
-        add(content, BorderLayout.CENTER);
-        
-        // --- CORRECTION : Initialisation de labelTotal avec GridBagLayout ---
-        JPanel totalPanel = new JPanel(new GridBagLayout());
-        totalPanel.setBackground(Color.WHITE);
-        totalPanel.setBorder(BorderFactory.createTitledBorder(" Recette totale "));
+        JPanel totalPanel = new JPanel(new BorderLayout());
+        totalPanel.setBackground(Theme.FOND_CARTE);
+        totalPanel.setBorder(new EmptyBorder(12, 16, 12, 16));
         labelTotal = new JLabel("0 Ar", SwingConstants.CENTER);
-        labelTotal.setFont(new Font("Segoe UI", Font.BOLD, 40));
-        labelTotal.setForeground(new Color(40, 80, 200));
-        totalPanel.add(labelTotal);
-        add(totalPanel, BorderLayout.SOUTH);
-        
+        labelTotal.setFont(Theme.POLICE_GRANDE);
+        labelTotal.setForeground(Theme.BLEU_ACCENT);
+        totalPanel.add(labelTotal, BorderLayout.CENTER);
+        detailCard.add(totalPanel, BorderLayout.SOUTH);
+
+        content.add(detailCard);
+
+        // Top 5
+        JPanel topCard = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
+            }
+        };
+        topCard.setOpaque(false);
+
+        JLabel topTitre = new JLabel("   Top 5 meilleurs clients");
+        topTitre.setFont(Theme.POLICE_GRAS);
+        topTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
+        topCard.add(topTitre, BorderLayout.NORTH);
+
+        String[] cols2 = {"RANG", "NOM", "DEPENSES"};
+        modelTop = new DefaultTableModel(new Object[][]{}, cols2);
+        JTable table2 = new StyledTable(modelTop);
+        topCard.add(new JScrollPane(table2), BorderLayout.CENTER);
+
+        content.add(topCard);
+        add(content, BorderLayout.CENTER);
+
         rafraichir();
     }
 
     public void rafraichir() {
-        // Rafraichir la recette totale
-        if (labelTotal != null) {
-            labelTotal.setText(DonneesMemoire.recetteDuJour + " Ar");
-        }
-
-        // Rafraichir le détail
         modelDetail.setRowCount(0);
+        int totalGeneral = 0;
+
         for (DonneesMemoire.Vente v : DonneesMemoire.historiqueVentes) {
-            modelDetail.addRow(new Object[]{v.date, "Carburant", v.nomClient + " (" + v.litres + " L)", v.montant + " Ar"});
+            modelDetail.addRow(new Object[]{v.date, "Carburant", v.nomClient + " - " + v.produit + " (" + v.litres + " L)", String.format("%,d", v.montant) + " Ar"});
+            totalGeneral += v.montant;
         }
 
-        // Rafraichir le Top 5
+        for (DonneesMemoire.Entretien e : DonneesMemoire.historiqueEntretiens) {
+            modelDetail.addRow(new Object[]{e.date, "Service", e.nomClient + (e.voiture.isEmpty() ? "" : " (" + e.voiture + ")"), String.format("%,d", e.total) + " Ar"});
+            totalGeneral += e.total;
+        }
+
+        if (labelTotal != null) {
+            labelTotal.setText(String.format("%,d", totalGeneral) + " Ar");
+        }
+
         modelTop.setRowCount(0);
         Map<String, Integer> map = new HashMap<>();
         for (DonneesMemoire.Vente v : DonneesMemoire.historiqueVentes) {
             map.put(v.nomClient, map.getOrDefault(v.nomClient, 0) + v.montant);
         }
+        for (DonneesMemoire.Entretien e : DonneesMemoire.historiqueEntretiens) {
+            map.put(e.nomClient, map.getOrDefault(e.nomClient, 0) + e.total);
+        }
         List<Map.Entry<String, Integer>> list = new ArrayList<>(map.entrySet());
         list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
         for (int i = 0; i < Math.min(5, list.size()); i++) {
-            var e = list.get(i);
-            modelTop.addRow(new Object[]{i + 1, e.getKey(), e.getValue() + " Ar"});
+            var entry = list.get(i);
+            modelTop.addRow(new Object[]{i + 1, entry.getKey(), String.format("%,d", entry.getValue()) + " Ar"});
         }
     }
 }

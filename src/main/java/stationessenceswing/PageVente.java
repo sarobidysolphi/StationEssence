@@ -10,104 +10,141 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.io.FileOutputStream;
-import java.time.LocalDate;
 
 public class PageVente extends JPanel {
     private JComboBox<String> comboProduit;
     private JTextField champClient, champLitres;
     private JLabel labelTotal;
     private DefaultTableModel modeleHistorique;
-    private JTable tableau;
-    private JTextArea zoneReçu;
+    private StyledTable tableau;
+    private JTextArea zoneRecu;
     private JButton btnPDF;
 
     public PageVente() {
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 247, 250));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(Theme.FOND_CLAIR);
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Theme.FOND_CLAIR);
+        headerPanel.setBorder(new EmptyBorder(10, 10, 20, 10));
 
         JLabel titre = new JLabel("Vente de carburant");
-        titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        add(titre, BorderLayout.NORTH);
+        titre.setFont(Theme.POLICE_TITRE);
+        JLabel sousTitre = new JLabel("Verification du stock et calcul automatique");
+        sousTitre.setFont(Theme.POLICE_SOUS_TITRE);
+        sousTitre.setForeground(Theme.TEXTE_SECONDAIRE);
+        headerPanel.add(titre, BorderLayout.NORTH);
+        headerPanel.add(sousTitre, BorderLayout.SOUTH);
+        add(headerPanel, BorderLayout.NORTH);
 
-        JPanel contenu = new JPanel(new GridLayout(1, 2, 20, 0));
-        contenu.setBackground(new Color(245, 247, 250));
+        JPanel contenu = new JPanel(new GridLayout(1, 2, 16, 0));
+        contenu.setBackground(Theme.FOND_CLAIR);
 
-        JPanel formulaire = new JPanel(new GridBagLayout()) {
+        // Formulaire
+        JPanel formCard = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.WHITE);
-                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
             }
         };
-        formulaire.setOpaque(false);
-        formulaire.setBorder(new EmptyBorder(20, 20, 20, 20));
+        formCard.setOpaque(false);
+        formCard.setBorder(new EmptyBorder(24, 24, 24, 24));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        gbc.gridx = 0; gbc.gridy = 0; formulaire.add(new JLabel("Carburant :"), gbc);
-        gbc.gridx = 1; comboProduit = new JComboBox<>(); remplirCombo(); formulaire.add(comboProduit, gbc);
+        gbc.gridx = 0; gbc.gridy = 0;
+        formCard.add(new JLabel("Carburant :"), gbc);
+        gbc.gridx = 1; comboProduit = new JComboBox<>(); remplirCombo(); formCard.add(comboProduit, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1; formulaire.add(new JLabel("Client :"), gbc);
-        gbc.gridx = 1; champClient = new JTextField(15); formulaire.add(champClient, gbc);
+        gbc.gridx = 0; gbc.gridy = 1; formCard.add(new JLabel("Client :"), gbc);
+        gbc.gridx = 1; champClient = new JTextField(15); formCard.add(champClient, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; formulaire.add(new JLabel("Litres :"), gbc);
-        gbc.gridx = 1; champLitres = new JTextField(10); formulaire.add(champLitres, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; formCard.add(new JLabel("Litres :"), gbc);
+        gbc.gridx = 1; champLitres = new JTextField(10); formCard.add(champLitres, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3; formulaire.add(new JLabel("Total :"), gbc);
-        gbc.gridx = 1; labelTotal = new JLabel("0 Ar"); labelTotal.setFont(new Font("Segoe UI", Font.BOLD, 16)); labelTotal.setForeground(new Color(40, 80, 200)); formulaire.add(labelTotal, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; formCard.add(new JLabel("Total :"), gbc);
+        gbc.gridx = 1; labelTotal = new JLabel("0 Ar"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
 
-        gbc.gridx = 1; gbc.gridy = 4;
-        JButton btnValider = new JButton("Valider la vente");
-        btnValider.setBackground(new Color(40, 80, 200));
-        btnValider.setForeground(Color.WHITE);
-        btnValider.setFocusPainted(false);
-        btnValider.setBorderPainted(false);
-        btnValider.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnValider.setPreferredSize(new Dimension(150, 35));
-        formulaire.add(btnValider, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
+        JButton btnValider = MacButton.primary("Valider la vente");
+        formCard.add(btnValider, gbc);
 
-        contenu.add(formulaire);
+        contenu.add(formCard);
 
-        JPanel recuPanel = new JPanel(new BorderLayout());
-        recuPanel.setBackground(Color.WHITE);
-        recuPanel.setBorder(BorderFactory.createTitledBorder(" Reçu de vente "));
-        zoneReçu = new JTextArea();
-        zoneReçu.setEditable(false);
-        zoneReçu.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        zoneReçu.setText("Aucune vente effectuée.");
-        recuPanel.add(new JScrollPane(zoneReçu), BorderLayout.CENTER);
+        // Droite
+        JPanel droite = new JPanel(new BorderLayout());
+        droite.setOpaque(false);
+
+        JPanel recuCard = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
+            }
+        };
+        recuCard.setOpaque(false);
+        JLabel recuTitre = new JLabel("   Recu de vente");
+        recuTitre.setFont(Theme.POLICE_GRAS);
+        recuTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
+        recuCard.add(recuTitre, BorderLayout.NORTH);
+
+        zoneRecu = new JTextArea();
+        zoneRecu.setEditable(false);
+        zoneRecu.setFont(new Font("Consolas", Font.PLAIN, 13));
+        zoneRecu.setBorder(new EmptyBorder(8, 16, 8, 16));
+        zoneRecu.setText("Aucune vente effectuee.");
+        recuCard.add(new JScrollPane(zoneRecu), BorderLayout.CENTER);
 
         JPanel basRecu = new JPanel();
-        btnPDF = new JButton("📄 Imprimer le reçu (PDF)");
-        btnPDF.setBackground(new Color(40, 80, 200));
-        btnPDF.setForeground(Color.WHITE);
-        btnPDF.setFocusPainted(false);
-        btnPDF.setBorderPainted(false);
-        btnPDF.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        basRecu.setOpaque(false);
+        btnPDF = MacButton.ghost("Imprimer le recu (PDF)");
         btnPDF.setEnabled(false);
         btnPDF.addActionListener(e -> genererPDF());
         basRecu.add(btnPDF);
-        recuPanel.add(basRecu, BorderLayout.SOUTH);
+        recuCard.add(basRecu, BorderLayout.SOUTH);
 
-        JPanel histPanel = new JPanel(new BorderLayout());
-        histPanel.setBackground(Color.WHITE);
-        histPanel.setBorder(BorderFactory.createTitledBorder(" Historique des ventes "));
+        JPanel histCard = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 8));
+                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
+                g2.setColor(Theme.FOND_CARTE);
+                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
+            }
+        };
+        histCard.setOpaque(false);
+        JLabel histTitre = new JLabel("   Historique des ventes");
+        histTitre.setFont(Theme.POLICE_GRAS);
+        histTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
+        histCard.add(histTitre, BorderLayout.NORTH);
+
         String[] cols = {"PRODUIT", "CLIENT", "LITRES", "MONTANT", "DATE", "ACTIONS"};
         modeleHistorique = new DefaultTableModel(new Object[][]{}, cols) {
             @Override public boolean isCellEditable(int row, int col) { return col == 5; }
         };
-        tableau = new JTable(modeleHistorique);
-        tableau.setRowHeight(40);
-        tableau.getTableHeader().setBackground(new Color(40, 80, 200));
-        tableau.getTableHeader().setForeground(Color.WHITE);
-        histPanel.add(new JScrollPane(tableau), BorderLayout.CENTER);
+        tableau = new StyledTable(modeleHistorique);
+        histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
-        JPanel droite = new JPanel(new BorderLayout());
-        droite.add(recuPanel, BorderLayout.CENTER);
-        droite.add(histPanel, BorderLayout.SOUTH);
+        JPanel recuWrapper = new JPanel(new BorderLayout());
+        recuWrapper.setOpaque(false);
+        recuWrapper.add(recuCard, BorderLayout.CENTER);
+
+        JPanel histWrapper = new JPanel(new BorderLayout());
+        histWrapper.setOpaque(false);
+        histWrapper.add(histCard, BorderLayout.CENTER);
+
+        droite.add(recuWrapper, BorderLayout.CENTER);
+        droite.add(histWrapper, BorderLayout.SOUTH);
         contenu.add(droite);
 
         add(contenu, BorderLayout.CENTER);
@@ -126,8 +163,12 @@ public class PageVente extends JPanel {
                 if (row >= 0 && col == 5) {
                     int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cette vente ?", "Confirmation", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
+                        DonneesMemoire.Vente v = DonneesMemoire.historiqueVentes.get(row);
+                        DonneesMemoire.recetteDuJour -= v.montant;
                         DonneesMemoire.historiqueVentes.remove(row);
                         modeleHistorique.removeRow(row);
+                        btnPDF.setEnabled(false);
+                        zoneRecu.setText("Aucune vente effectuee.");
                     }
                 }
             }
@@ -147,7 +188,7 @@ public class PageVente extends JPanel {
             if (index >= 0 && !champLitres.getText().isEmpty()) {
                 int litres = Integer.parseInt(champLitres.getText());
                 int prix = DonneesMemoire.chargerProduits().get(index).prixParLitre * litres;
-                labelTotal.setText(prix + " Ar");
+                labelTotal.setText(String.format("%,d", prix) + " Ar");
             }
         } catch (Exception e) { labelTotal.setText("0 Ar"); }
     }
@@ -159,10 +200,10 @@ public class PageVente extends JPanel {
             String litresStr = champLitres.getText().trim();
 
             if (client.isEmpty()) { JOptionPane.showMessageDialog(this, "Veuillez entrer un nom de client !"); return; }
-            if (litresStr.isEmpty()) { JOptionPane.showMessageDialog(this, "Veuillez entrer une quantité de litres !"); return; }
+            if (litresStr.isEmpty()) { JOptionPane.showMessageDialog(this, "Veuillez entrer une quantite de litres !"); return; }
 
             int litres = Integer.parseInt(litresStr);
-            if (litres <= 0) { JOptionPane.showMessageDialog(this, "La quantité doit être supérieure à 0 !"); return; }
+            if (litres <= 0) { JOptionPane.showMessageDialog(this, "La quantite doit etre superieure a 0 !"); return; }
 
             var p = DonneesMemoire.chargerProduits().get(index);
             if (p.stock < litres) {
@@ -176,22 +217,22 @@ public class PageVente extends JPanel {
             DonneesMemoire.Vente vente = new DonneesMemoire.Vente(client, p.designation, litres, total);
             DonneesMemoire.historiqueVentes.add(vente);
 
-            String recu = "*********************************\n";
-            recu += "       STATION ESSENCE\n";
-            recu += "*********************************\n";
-            recu += "Date    : " + LocalDate.now() + "\n";
+            String recu = "****************************\n";
+            recu += "      STATION ESSENCE\n";
+            recu += "****************************\n\n";
+            recu += "Date    : " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + "\n";
             recu += "Client  : " + client + "\n";
-            recu += "---------------------------------\n";
-            recu += p.designation + "          " + total + " Ar\n";
-            recu += "---------------------------------\n";
-            recu += "TOTAL   : " + total + " Ar\n";
-            recu += "*********************************\n";
-            recu += "Merci de votre visite !";
-            zoneReçu.setText(recu);
+            recu += "----------------------------\n";
+            recu += String.format("%-18s %,10d\n", p.designation, total);
+            recu += "----------------------------\n";
+            recu += String.format("%-18s %,10d Ar\n", "TOTAL", total);
+            recu += "----------------------------\n\n";
+            recu += "   Merci de votre visite";
+            zoneRecu.setText(recu);
 
             btnPDF.setEnabled(true);
-            modeleHistorique.addRow(new Object[]{p.designation, client, litres, total + " Ar", LocalDate.now().toString(), "Supprimer"});
-            JOptionPane.showMessageDialog(this, "Vente validée : " + total + " Ar");
+            modeleHistorique.addRow(new Object[]{p.designation, client, litres, String.format("%,d", total) + " Ar", DonneesMemoire.aujourdHui(), "Supprimer"});
+            JOptionPane.showMessageDialog(this, "Vente validee : " + String.format("%,d", total) + " Ar");
             champClient.setText(""); champLitres.setText(""); labelTotal.setText("0 Ar");
             remplirCombo();
 
@@ -201,7 +242,7 @@ public class PageVente extends JPanel {
     }
 
     private void genererPDF() {
-        String texteRecu = zoneReçu.getText();
+        String texteRecu = zoneRecu.getText();
         try {
             String chemin = System.getProperty("user.home") + "\\Desktop\\recu_vente.pdf";
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
@@ -209,7 +250,7 @@ public class PageVente extends JPanel {
             Document doc = new Document(pdf);
             doc.add(new Paragraph(texteRecu));
             doc.close();
-            JOptionPane.showMessageDialog(this, "PDF généré sur le bureau !");
+            JOptionPane.showMessageDialog(this, "PDF genere sur le bureau !");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur PDF : " + e.getMessage());
         }
