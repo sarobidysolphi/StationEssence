@@ -117,4 +117,14 @@ public class DonneesMemoire {
         }
         return recettes;
     }
+    
+    
+        // --- MÉTHODES DE RÉCUPÉRATION (Ajoutées maintenant !) ---
+    public static List<Produit> chargerProduits() {
+        return listeProduits;
+    }
+
+    public static List<Service> chargerServices() {
+        return listeServices;
+    }
 }
