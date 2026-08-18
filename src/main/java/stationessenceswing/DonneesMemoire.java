@@ -52,7 +52,7 @@ public class DonneesMemoire {
         }
     }
 
-    // --- NOUVEAU : ENTREE (Stock) ---
+    // --- ENTREE (Stock) ---
     public static class Entree {
         public String produit;
         public int quantite;
@@ -65,7 +65,7 @@ public class DonneesMemoire {
         }
     }
 
-    // --- NOUVEAU : ENTRETIEN ---
+    // --- ENTRETIEN ---
     public static class Entretien {
         public String nomClient;
         public String voiture;
@@ -101,15 +101,7 @@ public class DonneesMemoire {
         listeServices.add(new Service(4, "Graissage", 10000));
     }
 
-    // --- MÉTHODES DE RÉCUPÉRATION ---
-    public static List<Produit> chargerProduits() {
-        return listeProduits;
-    }
-
-    public static List<Service> chargerServices() {
-        return listeServices;
-    }
-        // --- MÉTHODE POUR LES STATISTIQUES (Graphique 5 mois) ---
+    // --- MÉTHODE POUR LES STATISTIQUES ---
     public static int[] getRecettes5DerniersMois() {
         int[] recettes = new int[5];
         int totalActuel = recetteDuJour;
