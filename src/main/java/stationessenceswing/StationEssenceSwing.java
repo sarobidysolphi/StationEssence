@@ -13,6 +13,7 @@ public class StationEssenceSwing {
     private static JPanel contentPanel;
     private static JFrame fenetre;
     private static int mouseX, mouseY;
+    private static JButton dernierBoutonActif = null; // Garde le bouton sélectionné
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -24,6 +25,7 @@ public class StationEssenceSwing {
             fenetre.setUndecorated(true);
             fenetre.setBackground(new Color(0, 0, 0, 0));
 
+            // --- BARRE DE TITRE ---
             JPanel barreTitre = new JPanel(new BorderLayout());
             barreTitre.setOpaque(false);
             barreTitre.setPreferredSize(new Dimension(1150, 55));
@@ -50,8 +52,11 @@ public class StationEssenceSwing {
             JPanel boutonsControle = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 8));
             boutonsControle.setOpaque(false);
 
+            // Bouton Réduire (Rond Jaune)
             JButton btnMin = new JButton() {
-                @Override protected void paintComponent(Graphics g) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(255, 204, 0));
@@ -61,10 +66,16 @@ public class StationEssenceSwing {
                 }
             };
             btnMin.setPreferredSize(new Dimension(28, 28));
+            btnMin.setBorderPainted(false);
+            btnMin.setContentAreaFilled(false);
+            btnMin.setFocusPainted(false);
             btnMin.addActionListener(e -> fenetre.setState(JFrame.ICONIFIED));
 
+            // Bouton Agrandir (Rond Vert)
             JButton btnMax = new JButton() {
-                @Override protected void paintComponent(Graphics g) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(0, 204, 0));
@@ -74,13 +85,22 @@ public class StationEssenceSwing {
                 }
             };
             btnMax.setPreferredSize(new Dimension(28, 28));
+            btnMax.setBorderPainted(false);
+            btnMax.setContentAreaFilled(false);
+            btnMax.setFocusPainted(false);
             btnMax.addActionListener(e -> {
-                if (fenetre.getExtendedState() == JFrame.MAXIMIZED_BOTH) fenetre.setExtendedState(JFrame.NORMAL);
-                else fenetre.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                if (fenetre.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+                    fenetre.setExtendedState(JFrame.NORMAL);
+                } else {
+                    fenetre.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                }
             });
 
+            // Bouton Fermer (Rond Rouge)
             JButton btnClose = new JButton() {
-                @Override protected void paintComponent(Graphics g) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(255, 60, 60));
@@ -90,6 +110,9 @@ public class StationEssenceSwing {
                 }
             };
             btnClose.setPreferredSize(new Dimension(28, 28));
+            btnClose.setBorderPainted(false);
+            btnClose.setContentAreaFilled(false);
+            btnClose.setFocusPainted(false);
             btnClose.addActionListener(e -> System.exit(0));
 
             boutonsControle.add(btnMin);
@@ -99,8 +122,11 @@ public class StationEssenceSwing {
             barreTitre.add(titreApp, BorderLayout.WEST);
             barreTitre.add(boutonsControle, BorderLayout.EAST);
 
+            // --- MENU LATÉRAL ---
             JPanel menuPanel = new JPanel() {
-                @Override protected void paintComponent(Graphics g) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(40, 80, 200));
@@ -123,6 +149,7 @@ public class StationEssenceSwing {
                 "Statistiques", "Recettes"
             };
 
+            // --- CONTENU DROITE ---
             contentPanel = new JPanel(new CardLayout());
             contentPanel.setBackground(new Color(245, 247, 250));
             contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
@@ -136,18 +163,58 @@ public class StationEssenceSwing {
             contentPanel.add(new PageStatistiques(), "Statistiques");
             contentPanel.add(new PageRecettes(), "Recettes");
 
+            // --- BOUTONS DU MENU ---
             for (String nom : nomsPages) {
                 JButton btn = creerBoutonMenuStylise(nom);
                 btn.addActionListener(e -> {
+                    // Réinitialiser l'ancien bouton à sa couleur par défaut
+                    if (dernierBoutonActif != null) {
+                        dernierBoutonActif.setBackground(new Color(40, 80, 200));
+                    }
+
+                    // Changer la couleur du bouton actuel (Vert foncé pour l'actif)
+                    btn.setBackground(new Color(46, 125, 50));
+                    dernierBoutonActif = btn;
+
                     CardLayout cl = (CardLayout)(contentPanel.getLayout());
                     cl.show(contentPanel, nom);
+
+                    // --- RAFRAÎCHISSEMENT DES PAGES DYNAMIQUES ---
+                    if (nom.equals("Tableau de bord")) {
+                        for (java.awt.Component c : contentPanel.getComponents()) {
+                            if (c instanceof PageTableauBord) {
+                                ((PageTableauBord) c).rafraichir();
+                            }
+                        }
+                    }
+                    if (nom.equals("Entrées de stock")) {
+                        for (java.awt.Component c : contentPanel.getComponents()) {
+                            if (c instanceof PageStock) {
+                                ((PageStock) c).remplirCombo();
+                            }
+                        }
+                    }
+                    if (nom.equals("Produits")) {
+                        for (java.awt.Component c : contentPanel.getComponents()) {
+                            if (c instanceof PageProduits) {
+                                ((PageProduits) c).rafraichirTableau();
+                            }
+                        }
+                    }
+                    if (nom.equals("Services")) {
+                        // Vous pouvez ajouter le rafraîchissement de la page Services ici si besoin
+                        // Exemple: ((PageServices) c).rafraichirTableau();
+                    }
                 });
                 menuPanel.add(btn);
                 menuPanel.add(Box.createVerticalStrut(10));
             }
 
+            // --- PANNEAU PRINCIPAL ---
             JPanel mainPanel = new JPanel(new BorderLayout()) {
-                @Override protected void paintComponent(Graphics g) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(new Color(40, 80, 200));
@@ -177,11 +244,17 @@ public class StationEssenceSwing {
         btn.setBorder(new EmptyBorder(5, 15, 5, 15));
 
         btn.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) {
-                btn.setBackground(new Color(60, 110, 255));
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (btn != dernierBoutonActif) {
+                    btn.setBackground(new Color(60, 110, 255));
+                }
             }
-            @Override public void mouseExited(MouseEvent e) {
-                btn.setBackground(new Color(40, 80, 200));
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (btn != dernierBoutonActif) {
+                    btn.setBackground(new Color(40, 80, 200));
+                }
             }
         });
         return btn;

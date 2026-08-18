@@ -80,7 +80,7 @@ public class DonneesMemoire {
         }
     }
 
-    // --- LISTES STATIQUES EN MÉMOIRE ---
+    // --- LISTES STATIQUES EN MÉMOIRE (TOUTES VIDES AU DÉMARRAGE) ---
     public static List<Produit> listeProduits = new ArrayList<>();
     public static List<Service> listeServices = new ArrayList<>();
     public static List<Vente> historiqueVentes = new ArrayList<>();
@@ -89,16 +89,13 @@ public class DonneesMemoire {
     
     public static int recetteDuJour = 0;
 
-    // --- INITIALISATION DES DONNÉES ---
-    static {
-        listeProduits.add(new Produit(1, "Essence", 530, 50, 5200));
-        listeProduits.add(new Produit(2, "Gasoil", 245, 50, 4600));
-        listeProduits.add(new Produit(3, "Pétrole", 90, 20, 3800));
+    // --- MÉTHODES DE RÉCUPÉRATION ---
+    public static List<Produit> chargerProduits() {
+        return listeProduits;
+    }
 
-        listeServices.add(new Service(1, "Lavage", 20000));
-        listeServices.add(new Service(2, "Gonflage", 2000));
-        listeServices.add(new Service(3, "Vidange", 35000));
-        listeServices.add(new Service(4, "Graissage", 10000));
+    public static List<Service> chargerServices() {
+        return listeServices;
     }
 
     // --- MÉTHODE POUR LES STATISTIQUES ---
@@ -116,15 +113,5 @@ public class DonneesMemoire {
             recettes[0] = (int)(totalActuel * 0.05);
         }
         return recettes;
-    }
-    
-    
-        // --- MÉTHODES DE RÉCUPÉRATION (Ajoutées maintenant !) ---
-    public static List<Produit> chargerProduits() {
-        return listeProduits;
-    }
-
-    public static List<Service> chargerServices() {
-        return listeServices;
     }
 }

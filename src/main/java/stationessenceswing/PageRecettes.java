@@ -3,8 +3,15 @@ package stationessenceswing;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PageRecettes extends JPanel {
     private JLabel labelTotal;
@@ -22,7 +29,7 @@ public class PageRecettes extends JPanel {
         JPanel content = new JPanel(new GridLayout(1, 2, 20, 0));
         content.setBackground(new Color(245, 247, 250));
 
-        // Détail des recettes
+        // -- GAUCHE : Détail des recettes --
         JPanel detailPanel = new JPanel(new BorderLayout());
         detailPanel.setBackground(Color.WHITE);
         detailPanel.setBorder(BorderFactory.createTitledBorder(" Détail des recettes "));
@@ -35,7 +42,7 @@ public class PageRecettes extends JPanel {
         detailPanel.add(new JScrollPane(table1), BorderLayout.CENTER);
         content.add(detailPanel);
 
-        // Top 5 clients
+        // -- DROITE : Top 5 clients --
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.WHITE);
         topPanel.setBorder(BorderFactory.createTitledBorder(" Top 5 meilleurs clients "));
@@ -49,12 +56,25 @@ public class PageRecettes extends JPanel {
         content.add(topPanel);
 
         add(content, BorderLayout.CENTER);
+        
+        // --- CORRECTION : Initialisation de labelTotal avec GridBagLayout ---
+        JPanel totalPanel = new JPanel(new GridBagLayout());
+        totalPanel.setBackground(Color.WHITE);
+        totalPanel.setBorder(BorderFactory.createTitledBorder(" Recette totale "));
+        labelTotal = new JLabel("0 Ar", SwingConstants.CENTER);
+        labelTotal.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        labelTotal.setForeground(new Color(40, 80, 200));
+        totalPanel.add(labelTotal);
+        add(totalPanel, BorderLayout.SOUTH);
+        
         rafraichir();
     }
 
     public void rafraichir() {
         // Rafraichir la recette totale
-        labelTotal.setText("Recette totale : " + DonneesMemoire.recetteDuJour + " Ar");
+        if (labelTotal != null) {
+            labelTotal.setText(DonneesMemoire.recetteDuJour + " Ar");
+        }
 
         // Rafraichir le détail
         modelDetail.setRowCount(0);

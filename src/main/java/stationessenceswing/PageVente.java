@@ -4,7 +4,6 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -19,7 +18,9 @@ public class PageVente extends JPanel {
     private JLabel labelTotal;
     private DefaultTableModel modeleHistorique;
     private JTable tableau;
-    private JTextArea zoneReçu; // Pour afficher le reçu après la vente
+    private JTextArea zoneReçu;
+    private JButton btnPDF;
+    private boolean venteEnCours = false;
 
     public PageVente() {
         setLayout(new BorderLayout());
@@ -82,20 +83,19 @@ public class PageVente extends JPanel {
         zoneReçu.setText("Aucune vente effectuée.");
         recuPanel.add(new JScrollPane(zoneReçu), BorderLayout.CENTER);
 
-        // BOUTON PDF AJOUTÉ ICI
         JPanel basRecu = new JPanel();
-        JButton btnPDF = new JButton("📄 Imprimer le reçu (PDF)");
+        btnPDF = new JButton("📄 Imprimer le reçu (PDF)");
         btnPDF.setBackground(new Color(40, 80, 200));
         btnPDF.setForeground(Color.WHITE);
         btnPDF.setFocusPainted(false);
         btnPDF.setBorderPainted(false);
         btnPDF.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnPDF.setEnabled(false); // Désactivé tant qu'il n'y a pas de vente
+        btnPDF.setEnabled(false);
         btnPDF.addActionListener(e -> genererPDF());
         basRecu.add(btnPDF);
         recuPanel.add(basRecu, BorderLayout.SOUTH);
 
-        // --- HISTORIQUE DES VENTES ---
+        // --- HISTORIQUE ---
         JPanel histPanel = new JPanel(new BorderLayout());
         histPanel.setBackground(Color.WHITE);
         histPanel.setBorder(BorderFactory.createTitledBorder(" Historique des ventes "));
@@ -109,7 +109,6 @@ public class PageVente extends JPanel {
         tableau.getTableHeader().setForeground(Color.WHITE);
         histPanel.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
-        // --- ASSEMBLAGE FINAL ---
         JPanel droite = new JPanel(new BorderLayout());
         droite.add(recuPanel, BorderLayout.CENTER);
         droite.add(histPanel, BorderLayout.SOUTH);
@@ -160,42 +159,51 @@ public class PageVente extends JPanel {
     private void validerVente() {
         try {
             int index = comboProduit.getSelectedIndex();
-            int litres = Integer.parseInt(champLitres.getText());
+            String client = champClient.getText().trim();
+            String litresStr = champLitres.getText().trim();
+
+            if (client.isEmpty()) { JOptionPane.showMessageDialog(this, "Veuillez entrer un nom de client !"); return; }
+            if (litresStr.isEmpty()) { JOptionPane.showMessageDialog(this, "Veuillez entrer une quantité de litres !"); return; }
+
+            int litres = Integer.parseInt(litresStr);
+            if (litres <= 0) { JOptionPane.showMessageDialog(this, "La quantité doit être supérieure à 0 !"); return; }
+
             var p = DonneesMemoire.chargerProduits().get(index);
-            if (p.stock >= litres) {
-                p.stock -= litres;
-                int total = litres * p.prixParLitre;
-                DonneesMemoire.recetteDuJour += total;
-                DonneesMemoire.Vente vente = new DonneesMemoire.Vente(champClient.getText(), p.designation, litres, total);
-                DonneesMemoire.historiqueVentes.add(vente);
-
-                // --- AFFICHAGE DU REÇU DANS LA ZONE TEXTE ---
-                String recu = "*********************************\n";
-                recu += "       STATION ESSENCE\n";
-                recu += "*********************************\n";
-                recu += "Date    : " + LocalDate.now() + "\n";
-                recu += "Client  : " + champClient.getText() + "\n";
-                recu += "---------------------------------\n";
-                recu += p.designation + "          " + total + " Ar\n";
-                recu += "---------------------------------\n";
-                recu += "TOTAL   : " + total + " Ar\n";
-                recu += "*********************************\n";
-                recu += "Merci de votre visite !";
-                zoneReçu.setText(recu);
-
-                // ACTIVER LE BOUTON PDF
-                JPanel basRecu = (JPanel) ((JPanel) this.getComponent(1)).getComponent(1);
-                JButton btnPDF = (JButton) basRecu.getComponent(0);
-                btnPDF.setEnabled(true);
-
-                modeleHistorique.addRow(new Object[]{p.designation, champClient.getText(), litres, total + " Ar", LocalDate.now().toString(), "Supprimer"});
-                JOptionPane.showMessageDialog(this, "Vente validée !");
-                champClient.setText(""); champLitres.setText(""); labelTotal.setText("0 Ar");
-                remplirCombo();
-            } else {
-                JOptionPane.showMessageDialog(this, "Stock insuffisant !");
+            if (p.stock < litres) {
+                JOptionPane.showMessageDialog(this, "Stock insuffisant ! Il reste " + p.stock + " L.");
+                return;
             }
-        } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erreur !"); }
+
+            p.stock -= litres;
+            int total = litres * p.prixParLitre;
+            DonneesMemoire.recetteDuJour += total;
+            DonneesMemoire.Vente vente = new DonneesMemoire.Vente(client, p.designation, litres, total);
+            DonneesMemoire.historiqueVentes.add(vente);
+            venteEnCours = true;
+
+            // --- Affichage du reçu ---
+            String recu = "*********************************\n";
+            recu += "       STATION ESSENCE\n";
+            recu += "*********************************\n";
+            recu += "Date    : " + LocalDate.now() + "\n";
+            recu += "Client  : " + client + "\n";
+            recu += "---------------------------------\n";
+            recu += p.designation + "          " + total + " Ar\n";
+            recu += "---------------------------------\n";
+            recu += "TOTAL   : " + total + " Ar\n";
+            recu += "*********************************\n";
+            recu += "Merci de votre visite !";
+            zoneReçu.setText(recu);
+
+            btnPDF.setEnabled(true);
+            modeleHistorique.addRow(new Object[]{p.designation, client, litres, total + " Ar", LocalDate.now().toString(), "Supprimer"});
+            JOptionPane.showMessageDialog(this, "Vente validée : " + total + " Ar");
+            champClient.setText(""); champLitres.setText(""); labelTotal.setText("0 Ar");
+            remplirCombo();
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre valide pour les litres !");
+        }
     }
 
     private void genererPDF() {
@@ -205,7 +213,7 @@ public class PageVente extends JPanel {
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
             PdfDocument pdf = new PdfDocument(writer);
             Document doc = new Document(pdf);
-            doc.add(new Paragraph(texteRecu.replace("\n", "\n")));
+            doc.add(new Paragraph(texteRecu));
             doc.close();
             JOptionPane.showMessageDialog(this, "PDF généré sur le bureau !");
         } catch (Exception e) {

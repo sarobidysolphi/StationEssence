@@ -21,7 +21,6 @@ public class PageStock extends JPanel {
 
         JLabel titre = new JLabel("Entrée de stock (CRUD)");
         titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titre.setForeground(new Color(30, 30, 30));
         add(titre, BorderLayout.NORTH);
 
         JPanel contenu = new JPanel(new GridLayout(1, 2, 20, 0));
@@ -84,7 +83,6 @@ public class PageStock extends JPanel {
         comboProduits.addActionListener(e -> mettreAJourStockAvant());
         btnValider.addActionListener(e -> validerEntree());
 
-        // Écouteur de suppression
         tableau.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int row = tableau.rowAtPoint(evt.getPoint());
@@ -100,11 +98,13 @@ public class PageStock extends JPanel {
         });
     }
 
-    private void remplirCombo() {
+    // --- MÉTHODE PUBLIQUE POUR METTRE À JOUR LA LISTE DÉROULANTE ---
+    public void remplirCombo() {
         comboProduits.removeAllItems();
         for (var p : DonneesMemoire.chargerProduits()) {
             comboProduits.addItem(p.designation + " (" + p.stock + " L)");
         }
+        mettreAJourStockAvant();
     }
 
     private void mettreAJourStockAvant() {
@@ -119,6 +119,7 @@ public class PageStock extends JPanel {
     private void validerEntree() {
         try {
             int idx = comboProduits.getSelectedIndex();
+            if (idx == -1) { JOptionPane.showMessageDialog(this, "Aucun produit disponible !"); return; }
             int qte = Integer.parseInt(champQuantite.getText());
             DonneesMemoire.Produit p = DonneesMemoire.chargerProduits().get(idx);
             int avant = p.stock;
