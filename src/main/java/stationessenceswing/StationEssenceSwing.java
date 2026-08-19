@@ -18,6 +18,7 @@ public class StationEssenceSwing {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             UIManager.put("Panel.background", Theme.FOND_CLAIR);
+            UIManager.put("Label.foreground", Theme.TEXTE_FONCE);
             UIManager.put("TextField.background", Theme.FOND_CARTE);
             UIManager.put("TextField.foreground", Theme.TEXTE_FONCE);
             UIManager.put("TextField.caretForeground", Theme.BLEU_ACCENT);

@@ -184,6 +184,8 @@ public class PageEntretiens extends JPanel {
         for (ServiceEnt s : services) {
             JCheckBox chk = new JCheckBox(s.getService() + " - " + String.format("%,d", s.getPrix()) + " Ar");
             chk.setFont(Theme.POLICE_NORMALE);
+            chk.setForeground(Theme.TEXTE_FONCE);
+            chk.setBackground(Theme.FOND_CARTE);
             chk.putClientProperty("service", s);
             chk.addChangeListener(update);
             checkBoxServices.add(chk);
