@@ -160,6 +160,17 @@ public class PageEntretiens extends JPanel {
         for (JCheckBox chk : checkBoxServices) {
             chk.addChangeListener(update);
         }
+
+        champNom.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
+        });
+        champVoiture.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
+        });
     }
 
     public void genererCheckBoxes() {
@@ -241,8 +252,7 @@ public class PageEntretiens extends JPanel {
         }
 
         rafraichirHistorique();
-        genererPDFFromRecu();
-        JOptionPane.showMessageDialog(this, "Entretien enregistre !");
+        JOptionPane.showMessageDialog(this, "Entretien enregistre ! Le recu est affiche a droite. Cliquez sur 'Generer le PDF' pour le telecharger.");
 
         champNom.setText(""); champVoiture.setText("");
         for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
