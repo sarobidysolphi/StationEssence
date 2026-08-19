@@ -6,6 +6,8 @@ import java.util.List;
 
 public class ServiceDAO {
 
+    public static String lastErreur = "";
+
     public static List<ServiceEnt> getAll() {
         List<ServiceEnt> liste = new ArrayList<>();
         try (Connection conn = ConnexionBD.getConnection();
@@ -40,8 +42,10 @@ public class ServiceDAO {
             ps.setString(1, s.getNumServ());
             ps.setString(2, s.getService());
             ps.setInt(3, s.getPrix());
+            lastErreur = "";
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
+            lastErreur = e.getMessage();
             e.printStackTrace();
             return false;
         }

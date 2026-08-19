@@ -109,7 +109,7 @@ public class PageProduits extends JPanel {
                 if (ProduitDAO.ajouter(new Produit(id, design, stock))) {
                     rafraichirTableau();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout !");
+                    JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout !\n" + ProduitDAO.lastErreur);
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Stock invalide !");

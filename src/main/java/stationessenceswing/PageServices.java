@@ -109,7 +109,7 @@ public class PageServices extends JPanel {
                 if (ServiceDAO.ajouter(new ServiceEnt(id, nom, prix))) {
                     rafraichirTableau();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout !");
+                    JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout !\n" + ServiceDAO.lastErreur);
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Prix invalide !");

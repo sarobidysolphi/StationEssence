@@ -6,6 +6,8 @@ import java.util.List;
 
 public class ProduitDAO {
 
+    public static String lastErreur = "";
+
     public static List<Produit> getAll() {
         List<Produit> liste = new ArrayList<>();
         try (Connection conn = ConnexionBD.getConnection();
@@ -40,8 +42,10 @@ public class ProduitDAO {
             ps.setString(1, p.getNumProd());
             ps.setString(2, p.getDesignation());
             ps.setInt(3, p.getStock());
+            lastErreur = "";
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
+            lastErreur = e.getMessage();
             e.printStackTrace();
             return false;
         }
