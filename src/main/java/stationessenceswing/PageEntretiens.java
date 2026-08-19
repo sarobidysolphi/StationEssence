@@ -212,24 +212,34 @@ public class PageEntretiens extends JPanel {
 
         String nom = champNom.getText().trim();
         String voiture = champVoiture.getText().trim();
-        String recu = "****************************\n";
-        recu += "      STATION ESSENCE\n";
-        recu += "****************************\n\n";
-        recu += "Date    : " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + "\n";
-        recu += "Client  : " + (nom.isEmpty() ? "---" : nom) + "\n";
-        if (!voiture.isEmpty()) recu += "Voiture : " + voiture + "\n";
-        recu += "----------------------------\n";
+
+        StringBuilder recu = new StringBuilder();
+        recu.append("Date : ").append(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)).append("\n\n");
+        recu.append("Client : ").append(nom.isEmpty() ? "---" : nom).append("\n");
+        recu.append("Voiture : ").append(voiture.isEmpty() ? "---" : voiture).append("\n\n");
+
+        String sep = "+----------------------+----------------------+\n";
+        String sepDouble = "+======================+======================+\n";
+
+        recu.append(sep);
+        recu.append(String.format("| %-20s | %-20s |\n", "Service", "Montant"));
+        recu.append(sep);
+
         for (JCheckBox chk : checkBoxServices) {
             if (chk.isSelected()) {
                 ServiceEnt s = (ServiceEnt) chk.getClientProperty("service");
-                if (s != null) recu += String.format("%-18s %,10d\n", s.getService(), s.getPrix());
+                if (s != null) {
+                    recu.append(String.format("| %-20s | %,18d Ar |\n", s.getService(), s.getPrix()));
+                }
             }
         }
-        recu += "----------------------------\n";
-        recu += String.format("%-18s %,10d Ar\n", "TOTAL", total);
-        recu += "----------------------------\n\n";
-        recu += "   Merci de votre visite";
-        zoneRecu.setText(recu);
+
+        recu.append(sepDouble);
+        recu.append(String.format("| %-20s | %,18d Ar |\n", "TOTAL", total));
+        recu.append(sep);
+
+        zoneRecu.setText(recu.toString());
+    }
     }
 
     private void validerEntretien() {
@@ -275,7 +285,9 @@ public class PageEntretiens extends JPanel {
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
             PdfDocument pdf = new PdfDocument(writer);
             Document doc = new Document(pdf);
-            doc.add(new Paragraph(zoneRecu.getText()));
+            doc.add(new Paragraph("STATION ESSENCE").setBold().setFontSize(16));
+            doc.add(new Paragraph(zoneRecu.getText()).setFontSize(11));
+            doc.add(new Paragraph("\nMerci pour votre visite !").setFontSize(11));
             doc.close();
             JOptionPane.showMessageDialog(this, "PDF genere sur le Bureau !");
         } catch (Exception e) {
