@@ -56,7 +56,7 @@ public class PageRecettes extends JPanel {
         JPanel totalPanel = new JPanel(new BorderLayout());
         totalPanel.setBackground(Theme.FOND_CARTE);
         totalPanel.setBorder(new EmptyBorder(12, 16, 12, 16));
-        labelTotal = new JLabel("0 FCFA", SwingConstants.CENTER);
+        labelTotal = new JLabel("0 Ar", SwingConstants.CENTER);
         labelTotal.setFont(Theme.POLICE_GRANDE);
         labelTotal.setForeground(Theme.BLEU_ACCENT);
         totalPanel.add(labelTotal, BorderLayout.CENTER);
@@ -81,7 +81,7 @@ public class PageRecettes extends JPanel {
         topTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
         topCard.add(topTitre, BorderLayout.NORTH);
 
-        String[] cols2 = {"RANG", "NOM", "DEPENSES (FCFA)"};
+        String[] cols2 = {"RANG", "NOM", "DEPENSES (Ar)"};
         modelTop = new DefaultTableModel(new Object[][]{}, cols2);
         JTable table2 = new StyledTable(modelTop);
         topCard.add(new JScrollPane(table2), BorderLayout.CENTER);
@@ -102,14 +102,14 @@ public class PageRecettes extends JPanel {
         }
 
         if (labelTotal != null) {
-            labelTotal.setText(String.format("%,d", totalGeneral) + " FCFA");
+            labelTotal.setText(String.format("%,d", totalGeneral) + " Ar");
         }
 
         modelTop.setRowCount(0);
         List<String[]> topClients = AchatDAO.getTop5Clients();
         int rang = 1;
         for (String[] client : topClients) {
-            modelTop.addRow(new Object[]{rang++, client[0], String.format("%,d", Integer.parseInt(client[1])) + " FCFA"});
+            modelTop.addRow(new Object[]{rang++, client[0], String.format("%,d", Integer.parseInt(client[1])) + " Ar"});
         }
     }
 }

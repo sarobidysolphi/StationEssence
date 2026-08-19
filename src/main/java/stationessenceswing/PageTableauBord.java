@@ -133,7 +133,7 @@ public class PageTableauBord extends JPanel {
 
     public void rafraichir() {
         int totalRecette = AchatDAO.getRecetteTotale();
-        labelRecette.setText(String.format("%,d", totalRecette) + " FCFA");
+        labelRecette.setText(String.format("%,d", totalRecette) + " Ar");
 
         List<Produit> produits = ProduitDAO.getAll();
         int stockTotal = 0;

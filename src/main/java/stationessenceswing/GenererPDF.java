@@ -41,7 +41,7 @@ public class GenererPDF {
             table.addCell(new Cell().add(new Paragraph(ent.getDateEntretien())));
 
             table.addCell(new Cell().add(new Paragraph("Prix :")).setBold());
-            table.addCell(new Cell().add(new Paragraph(String.valueOf(serv.getPrix()) + " FCFA")));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(serv.getPrix()) + " Ar")));
 
             doc.add(table);
             doc.add(new Paragraph("\nMerci pour votre visite !").setTextAlignment(TextAlignment.CENTER));

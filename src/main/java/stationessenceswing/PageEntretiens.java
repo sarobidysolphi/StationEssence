@@ -76,7 +76,7 @@ public class PageEntretiens extends JPanel {
         formCard.add(checkPanel, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; formCard.add(new JLabel("Total :"), gbc);
-        gbc.gridx = 1; labelTotal = new JLabel("0 FCFA"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
+        gbc.gridx = 1; labelTotal = new JLabel("0 Ar"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
 
         JPanel btnPanel = new JPanel();
         btnPanel.setOpaque(false);
@@ -183,7 +183,7 @@ public class PageEntretiens extends JPanel {
         checkPanel.removeAll();
         List<ServiceEnt> services = ServiceDAO.getAll();
         for (ServiceEnt s : services) {
-            JCheckBox chk = new JCheckBox(s.getService() + " - " + String.format("%,d", s.getPrix()) + " FCFA");
+            JCheckBox chk = new JCheckBox(s.getService() + " - " + String.format("%,d", s.getPrix()) + " Ar");
             chk.setFont(Theme.POLICE_NORMALE);
             chk.putClientProperty("service", s);
             checkBoxServices.add(chk);
@@ -201,7 +201,7 @@ public class PageEntretiens extends JPanel {
                 if (s != null) total += s.getPrix();
             }
         }
-        labelTotal.setText(String.format("%,d", total) + " FCFA");
+        labelTotal.setText(String.format("%,d", total) + " Ar");
 
         String nom = champNom.getText().trim();
         String voiture = champVoiture.getText().trim();
@@ -219,7 +219,7 @@ public class PageEntretiens extends JPanel {
             }
         }
         recu += "----------------------------\n";
-        recu += String.format("%-18s %,10d FCFA\n", "TOTAL", total);
+        recu += String.format("%-18s %,10d Ar\n", "TOTAL", total);
         recu += "----------------------------\n\n";
         recu += "   Merci de votre visite";
         zoneRecu.setText(recu);
@@ -258,7 +258,7 @@ public class PageEntretiens extends JPanel {
         rafraichirHistorique();
         champNom.setText(""); champVoiture.setText("");
         for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
-        labelTotal.setText("0 FCFA");
+        labelTotal.setText("0 Ar");
         zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
     }
 

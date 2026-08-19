@@ -62,7 +62,7 @@ public class PageServices extends JPanel {
         topPanel.add(outilPanel, BorderLayout.CENTER);
         tableCard.add(topPanel, BorderLayout.NORTH);
 
-        String[] colonnes = {"ID", "SERVICE", "PRIX (FCFA)", "ACTIONS"};
+        String[] colonnes = {"ID", "SERVICE", "PRIX (Ar)", "ACTIONS"};
         modele = new DefaultTableModel(new Object[][]{}, colonnes) {
             @Override public boolean isCellEditable(int row, int col) { return col == 3; }
         };
@@ -94,7 +94,7 @@ public class PageServices extends JPanel {
         JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
         form.add(new JLabel("Num Service :")); form.add(champId);
         form.add(new JLabel("Nom :")); form.add(champNom);
-        form.add(new JLabel("Prix (FCFA) :")); form.add(champPrix);
+        form.add(new JLabel("Prix (Ar) :")); form.add(champPrix);
 
         int result = JOptionPane.showConfirmDialog(this, form, "Nouveau service", JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
@@ -171,7 +171,7 @@ public class PageServices extends JPanel {
 
                 JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
                 form.add(new JLabel("Nom :")); form.add(champNom);
-                form.add(new JLabel("Prix (FCFA) :")); form.add(champPrix);
+                form.add(new JLabel("Prix (Ar) :")); form.add(champPrix);
 
                 int result = JOptionPane.showConfirmDialog(null, form, "Modifier service", JOptionPane.OK_CANCEL_OPTION);
                 if (result == JOptionPane.OK_OPTION) {

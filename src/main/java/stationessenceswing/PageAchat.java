@@ -64,7 +64,7 @@ public class PageAchat extends JPanel {
         gbc.gridx = 1; champLitres = new JTextField(10); formCard.add(champLitres, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; formCard.add(new JLabel("Total :"), gbc);
-        gbc.gridx = 1; labelTotal = new JLabel("0 FCFA"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
+        gbc.gridx = 1; labelTotal = new JLabel("0 Ar"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         JButton btnValider = MacButton.primary("Valider la vente");
@@ -149,9 +149,9 @@ public class PageAchat extends JPanel {
             int index = comboProduit.getSelectedIndex();
             if (index >= 0 && !champLitres.getText().isEmpty()) {
                 int litres = Integer.parseInt(champLitres.getText());
-                labelTotal.setText(String.format("%,d", litres * 5200) + " FCFA");
+                labelTotal.setText(String.format("%,d", litres * 5200) + " Ar");
             }
-        } catch (Exception e) { labelTotal.setText("0 FCFA"); }
+        } catch (Exception e) { labelTotal.setText("0 Ar"); }
     }
 
     private void validerVente() {
@@ -180,7 +180,7 @@ public class PageAchat extends JPanel {
             if (AchatDAO.ajouter(achat, p.getNumProd())) {
                 rafraichirHistorique();
                 JOptionPane.showMessageDialog(this, "Vente enregistree !");
-                champClient.setText(""); champLitres.setText(""); labelTotal.setText("0 FCFA");
+                champClient.setText(""); champLitres.setText(""); labelTotal.setText("0 Ar");
                 remplirCombo();
             } else {
                 JOptionPane.showMessageDialog(this, "Erreur lors de l'enregistrement !");

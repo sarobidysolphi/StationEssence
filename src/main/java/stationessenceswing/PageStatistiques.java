@@ -110,7 +110,7 @@ public class PageStatistiques extends JPanel {
 
             g2.setColor(Theme.TEXTE_FONCE);
             g2.setFont(Theme.POLICE_GRAS);
-            g2.drawString(String.format("%,d", val) + " FCFA", x + 5, y - 10);
+            g2.drawString(String.format("%,d", val) + " Ar", x + 5, y - 10);
 
             LocalDate moisDate = now.minusMonths(4 - i);
             String nomMois = moisDate.format(formatter);
