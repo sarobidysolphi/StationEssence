@@ -117,7 +117,6 @@ public class PageEntretiens extends JPanel {
         recuHeader.add(recuTitre, BorderLayout.WEST);
 
         btnPDF = MacButton.primary("Generer le PDF");
-        btnPDF.setEnabled(false);
         btnPDF.addActionListener(e -> genererPDFFromRecu());
         recuHeader.add(btnPDF, BorderLayout.EAST);
         recuCard.add(recuHeader, BorderLayout.NORTH);
@@ -224,7 +223,6 @@ public class PageEntretiens extends JPanel {
         recu += "----------------------------\n\n";
         recu += "   Merci de votre visite";
         zoneRecu.setText(recu);
-        btnPDF.setEnabled(total > 0 && !nom.isEmpty());
     }
 
     private void validerEntretien() {
@@ -262,7 +260,6 @@ public class PageEntretiens extends JPanel {
         for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
         labelTotal.setText("0 FCFA");
         zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
-        btnPDF.setEnabled(false);
     }
 
     private void genererPDFFromRecu() {
