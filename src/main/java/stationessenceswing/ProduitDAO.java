@@ -66,11 +66,27 @@ public class ProduitDAO {
     }
 
     public static boolean supprimer(String numProd) {
-        try (Connection conn = ConnexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM PRODUIT WHERE numProd=?")) {
-            ps.setString(1, numProd);
-            return ps.executeUpdate() > 0;
+        try (Connection conn = ConnexionBD.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps1 = conn.prepareStatement("DELETE FROM ACHAT WHERE numProd=?");
+                 PreparedStatement ps2 = conn.prepareStatement("DELETE FROM ENTREE WHERE numProd=?");
+                 PreparedStatement ps3 = conn.prepareStatement("DELETE FROM PRODUIT WHERE numProd=?")) {
+                ps1.setString(1, numProd);
+                ps1.executeUpdate();
+                ps2.setString(1, numProd);
+                ps2.executeUpdate();
+                ps3.setString(1, numProd);
+                boolean ok = ps3.executeUpdate() > 0;
+                conn.commit();
+                return ok;
+            } catch (SQLException e) {
+                conn.rollback();
+                lastErreur = e.getMessage();
+                e.printStackTrace();
+                return false;
+            }
         } catch (SQLException e) {
+            lastErreur = e.getMessage();
             e.printStackTrace();
             return false;
         }

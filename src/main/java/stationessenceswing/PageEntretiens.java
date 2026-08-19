@@ -152,6 +152,13 @@ public class PageEntretiens extends JPanel {
         tableau = new StyledTable(modeleHistorique);
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
+        JPanel histBas = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        histBas.setOpaque(false);
+        JButton btnSupprimer = MacButton.danger("Supprimer la selection");
+        btnSupprimer.addActionListener(e -> supprimerSelection());
+        histBas.add(btnSupprimer);
+        histCard.add(histBas, BorderLayout.SOUTH);
+
         droite.add(recuCard, BorderLayout.NORTH);
         droite.add(histCard, BorderLayout.CENTER);
         contenu.add(droite);
@@ -280,6 +287,20 @@ public class PageEntretiens extends JPanel {
         modeleHistorique.setRowCount(0);
         for (Entretien e : EntretienDAO.getAll()) {
             modeleHistorique.addRow(new Object[]{e.getNumEntr(), e.getNumServ(), e.getImmatriculation(), e.getNomClient(), e.getDateEntretien()});
+        }
+    }
+
+    private void supprimerSelection() {
+        int row = tableau.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Selectionnez un entretien dans l'historique !");
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer cet entretien ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            String numEntr = (String) modeleHistorique.getValueAt(row, 0);
+            EntretienDAO.supprimer(numEntr);
+            rafraichirHistorique();
         }
     }
 }

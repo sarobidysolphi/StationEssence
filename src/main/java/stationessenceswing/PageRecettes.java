@@ -9,6 +9,7 @@ import java.util.List;
 public class PageRecettes extends JPanel {
     private JLabel labelTotal;
     private DefaultTableModel modelDetail, modelTop;
+    private PlaceholderTextField champRecherche;
 
     public PageRecettes() {
         setLayout(new BorderLayout());
@@ -27,6 +28,28 @@ public class PageRecettes extends JPanel {
         headerPanel.add(titre, BorderLayout.NORTH);
         headerPanel.add(sousTitre, BorderLayout.SOUTH);
         add(headerPanel, BorderLayout.NORTH);
+
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        toolbar.setBackground(Theme.FOND_CLAIR);
+
+        champRecherche = new PlaceholderTextField("Rechercher un client...");
+        champRecherche.setPreferredSize(new Dimension(250, 34));
+        champRecherche.setFont(Theme.POLICE_NORMALE);
+
+        JButton btnRechercher = MacButton.primary("Rechercher");
+        btnRechercher.addActionListener(e -> rafraichir());
+
+        JButton btnReset = MacButton.ghost("Afficher tout");
+        btnReset.addActionListener(e -> {
+            champRecherche.setText("");
+            rafraichir();
+        });
+
+        toolbar.add(champRecherche);
+        toolbar.add(btnRechercher);
+        toolbar.add(btnReset);
+        toolbar.add(Box.createHorizontalGlue());
+        add(toolbar, BorderLayout.NORTH);
 
         JPanel content = new JPanel(new GridLayout(1, 2, 16, 0));
         content.setBackground(Theme.FOND_CLAIR);
@@ -49,7 +72,9 @@ public class PageRecettes extends JPanel {
         detailCard.add(detailTitre, BorderLayout.NORTH);
 
         String[] cols1 = {"NUM", "PRODUIT", "CLIENT", "LITRES", "DATE"};
-        modelDetail = new DefaultTableModel(new Object[][]{}, cols1);
+        modelDetail = new DefaultTableModel(new Object[][]{}, cols1) {
+            @Override public boolean isCellEditable(int row, int col) { return false; }
+        };
         JTable table1 = new StyledTable(modelDetail);
         detailCard.add(new JScrollPane(table1), BorderLayout.CENTER);
 
@@ -82,7 +107,9 @@ public class PageRecettes extends JPanel {
         topCard.add(topTitre, BorderLayout.NORTH);
 
         String[] cols2 = {"RANG", "NOM", "DEPENSES (Ar)"};
-        modelTop = new DefaultTableModel(new Object[][]{}, cols2);
+        modelTop = new DefaultTableModel(new Object[][]{}, cols2) {
+            @Override public boolean isCellEditable(int row, int col) { return false; }
+        };
         JTable table2 = new StyledTable(modelTop);
         topCard.add(new JScrollPane(table2), BorderLayout.CENTER);
 
@@ -96,7 +123,15 @@ public class PageRecettes extends JPanel {
         modelDetail.setRowCount(0);
         int totalGeneral = 0;
 
-        for (Achat a : AchatDAO.getAll()) {
+        String recherche = champRecherche != null ? champRecherche.getText().trim() : "";
+        List<Achat> achats;
+        if (!recherche.isEmpty()) {
+            achats = AchatDAO.rechercherParClient(recherche);
+        } else {
+            achats = AchatDAO.getAll();
+        }
+
+        for (Achat a : achats) {
             modelDetail.addRow(new Object[]{a.getNumAchat(), a.getNumProd(), a.getNomClient(), a.getNbrLitre(), a.getDateAchat()});
             totalGeneral += a.getNbrLitre() * 5200;
         }
