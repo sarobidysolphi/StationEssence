@@ -49,14 +49,28 @@ public class AchatDAO {
     }
 
     public static boolean supprimer(String numAchat) {
-        try (Connection conn = ConnexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM ACHAT WHERE numAchat=?")) {
-            ps.setString(1, numAchat);
-            return ps.executeUpdate() > 0;
+        try (Connection conn = ConnexionBD.getConnection()) {
+            PreparedStatement psGet = conn.prepareStatement(
+                "SELECT numProd, nbrLitre FROM ACHAT WHERE numAchat=?");
+            psGet.setString(1, numAchat);
+            ResultSet rs = psGet.executeQuery();
+            if (rs.next()) {
+                String numProd = rs.getString("numProd");
+                int nbrLitre = rs.getInt("nbrLitre");
+
+                PreparedStatement psDel = conn.prepareStatement("DELETE FROM ACHAT WHERE numAchat=?");
+                psDel.setString(1, numAchat);
+                boolean ok = psDel.executeUpdate() > 0;
+
+                if (ok) {
+                    ProduitDAO.ajouterStock(numProd, nbrLitre);
+                }
+                return ok;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     public static int getRecetteTotale() {

@@ -102,11 +102,13 @@ public class PageAchat extends JPanel {
         histToolbar.add(champRecherche, BorderLayout.EAST);
         histCard.add(histToolbar, BorderLayout.NORTH);
 
-        String[] cols = {"NUM", "PRODUIT", "CLIENT", "LITRES", "DATE"};
+        String[] cols = {"NUM", "PRODUIT", "CLIENT", "LITRES", "DATE", "ACTIONS"};
         modeleHistorique = new DefaultTableModel(new Object[][]{}, cols) {
-            @Override public boolean isCellEditable(int row, int col) { return false; }
+            @Override public boolean isCellEditable(int row, int col) { return col == 5; }
         };
         tableau = new StyledTable(modeleHistorique);
+        tableau.getColumnModel().getColumn(5).setCellRenderer(new ButtonRenderer());
+        tableau.getColumnModel().getColumn(5).setCellEditor(new ButtonEditor(new JCheckBox()));
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
         contenu.add(histCard);
@@ -140,7 +142,7 @@ public class PageAchat extends JPanel {
             achats = AchatDAO.getAll();
         }
         for (Achat a : achats) {
-            modeleHistorique.addRow(new Object[]{a.getNumAchat(), a.getNumProd(), a.getNomClient(), a.getNbrLitre(), a.getDateAchat()});
+            modeleHistorique.addRow(new Object[]{a.getNumAchat(), a.getNumProd(), a.getNomClient(), a.getNbrLitre(), a.getDateAchat(), "Supprimer"});
         }
     }
 
@@ -188,5 +190,50 @@ public class PageAchat extends JPanel {
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre valide pour les litres !");
         }
+    }
+
+    class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
+        private JButton btnSupprimer;
+        public ButtonRenderer() {
+            setLayout(new FlowLayout(FlowLayout.CENTER, 4, 0));
+            setBackground(Color.WHITE);
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(90, 28));
+            btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            add(btnSupprimer);
+        }
+        @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return this;
+        }
+    }
+
+    class ButtonEditor extends DefaultCellEditor {
+        private JPanel panel;
+        private JButton btnSupprimer;
+        private int currentRow;
+        public ButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+            panel.setBackground(Color.WHITE);
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(90, 28));
+            btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            panel.add(btnSupprimer);
+
+            btnSupprimer.addActionListener(e -> {
+                fireEditingStopped();
+                int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cette vente ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    String numAchat = (String) modeleHistorique.getValueAt(currentRow, 0);
+                    AchatDAO.supprimer(numAchat);
+                    rafraichirHistorique();
+                }
+            });
+        }
+        @Override public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            currentRow = row;
+            return panel;
+        }
+        @Override public Object getCellEditorValue() { return "Supprimer"; }
     }
 }
