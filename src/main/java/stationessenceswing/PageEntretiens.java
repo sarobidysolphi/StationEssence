@@ -45,6 +45,7 @@ public class PageEntretiens extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 16, 0));
         contenu.setBackground(Theme.FOND_CLAIR);
 
+        // --- GAUCHE : Formulaire ---
         JPanel formCard = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -90,9 +91,11 @@ public class PageEntretiens extends JPanel {
 
         contenu.add(formCard);
 
-        JPanel droite = new JPanel(new BorderLayout());
+        // --- DROITE : Recu en haut + Historique en bas ---
+        JPanel droite = new JPanel(new BorderLayout(0, 12));
         droite.setOpaque(false);
 
+        // Recu card (en haut)
         JPanel recuCard = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -104,26 +107,29 @@ public class PageEntretiens extends JPanel {
             }
         };
         recuCard.setOpaque(false);
-        JLabel recuTitre = new JLabel("   Recu d'entretien");
+        recuCard.setPreferredSize(new Dimension(0, 300));
+
+        JPanel recuHeader = new JPanel(new BorderLayout());
+        recuHeader.setOpaque(false);
+        recuHeader.setBorder(new EmptyBorder(8, 12, 4, 12));
+        JLabel recuTitre = new JLabel("Recu d'entretien");
         recuTitre.setFont(Theme.POLICE_GRAS);
-        recuTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
-        recuCard.add(recuTitre, BorderLayout.NORTH);
+        recuHeader.add(recuTitre, BorderLayout.WEST);
+
+        btnPDF = MacButton.primary("Generer le PDF");
+        btnPDF.setEnabled(false);
+        btnPDF.addActionListener(e -> genererPDFFromRecu());
+        recuHeader.add(btnPDF, BorderLayout.EAST);
+        recuCard.add(recuHeader, BorderLayout.NORTH);
 
         zoneRecu = new JTextArea();
         zoneRecu.setEditable(false);
         zoneRecu.setFont(new Font("Consolas", Font.PLAIN, 13));
         zoneRecu.setBorder(new EmptyBorder(8, 16, 8, 16));
-        zoneRecu.setText("Remplissez le formulaire et cochez des services.");
+        zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
         recuCard.add(new JScrollPane(zoneRecu), BorderLayout.CENTER);
 
-        JPanel basRecu = new JPanel();
-        basRecu.setOpaque(false);
-        btnPDF = MacButton.primary("Generer le PDF");
-        btnPDF.setEnabled(false);
-        btnPDF.addActionListener(e -> genererPDFFromRecu());
-        basRecu.add(btnPDF);
-        recuCard.add(basRecu, BorderLayout.SOUTH);
-
+        // Historique card (en bas)
         JPanel histCard = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -147,8 +153,8 @@ public class PageEntretiens extends JPanel {
         tableau = new StyledTable(modeleHistorique);
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
-        droite.add(recuCard, BorderLayout.CENTER);
-        droite.add(histCard, BorderLayout.SOUTH);
+        droite.add(recuCard, BorderLayout.NORTH);
+        droite.add(histCard, BorderLayout.CENTER);
         contenu.add(droite);
 
         add(contenu, BorderLayout.CENTER);
@@ -252,12 +258,10 @@ public class PageEntretiens extends JPanel {
         }
 
         rafraichirHistorique();
-        JOptionPane.showMessageDialog(this, "Entretien enregistre ! Le recu est affiche a droite. Cliquez sur 'Generer le PDF' pour le telecharger.");
-
         champNom.setText(""); champVoiture.setText("");
         for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
         labelTotal.setText("0 FCFA");
-        zoneRecu.setText("Remplissez le formulaire et cochez des services.");
+        zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
         btnPDF.setEnabled(false);
     }
 
@@ -269,7 +273,7 @@ public class PageEntretiens extends JPanel {
             Document doc = new Document(pdf);
             doc.add(new Paragraph(zoneRecu.getText()));
             doc.close();
-            JOptionPane.showMessageDialog(this, "PDF genere sur le bureau !");
+            JOptionPane.showMessageDialog(this, "PDF genere sur le Bureau !");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur PDF : " + e.getMessage());
         }
