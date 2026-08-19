@@ -4,7 +4,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class PageStock extends JPanel {
     private JComboBox<String> comboProduits;
@@ -34,7 +36,6 @@ public class PageStock extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 16, 0));
         contenu.setBackground(Theme.FOND_CLAIR);
 
-        // Formulaire card
         JPanel formCard = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -70,7 +71,6 @@ public class PageStock extends JPanel {
 
         contenu.add(formCard);
 
-        // Historique card
         JPanel histCard = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -88,9 +88,9 @@ public class PageStock extends JPanel {
         histTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
         histCard.add(histTitre, BorderLayout.NORTH);
 
-        String[] cols = {"PRODUIT", "QUANTITE", "DATE", "ACTIONS"};
+        String[] cols = {"NUM", "PRODUIT", "QUANTITE", "DATE", "ACTIONS"};
         modeleHistorique = new DefaultTableModel(new Object[][]{}, cols) {
-            @Override public boolean isCellEditable(int row, int col) { return col == 3; }
+            @Override public boolean isCellEditable(int row, int col) { return col == 4; }
         };
         tableau = new StyledTable(modeleHistorique);
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
@@ -105,11 +105,12 @@ public class PageStock extends JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int row = tableau.rowAtPoint(evt.getPoint());
                 int col = tableau.columnAtPoint(evt.getPoint());
-                if (row >= 0 && col == 3) {
+                if (row >= 0 && col == 4) {
                     int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cette entree ?", "Confirmation", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        DonneesMemoire.historiqueEntrees.remove(row);
-                        modeleHistorique.removeRow(row);
+                        String numEntree = (String) modeleHistorique.getValueAt(row, 0);
+                        EntreeDAO.supprimer(numEntree);
+                        remplirCombo();
                     }
                 }
             }
@@ -120,8 +121,13 @@ public class PageStock extends JPanel {
 
     public void remplirCombo() {
         comboProduits.removeAllItems();
-        for (var p : DonneesMemoire.chargerProduits()) {
-            comboProduits.addItem(p.designation + " (" + p.stock + " L)");
+        List<Produit> produits = ProduitDAO.getAll();
+        for (Produit p : produits) {
+            comboProduits.addItem(p.getNumProd() + " - " + p.getDesignation() + " (" + p.getStock() + " L)");
+        }
+        modeleHistorique.setRowCount(0);
+        for (Entree e : EntreeDAO.getAll()) {
+            modeleHistorique.addRow(new Object[]{e.getNumEntree(), e.getNumProd(), e.getStockEntree(), e.getDateEntree(), "Supprimer"});
         }
         mettreAJourStockAvant();
     }
@@ -129,9 +135,12 @@ public class PageStock extends JPanel {
     private void mettreAJourStockAvant() {
         int idx = comboProduits.getSelectedIndex();
         if (idx >= 0) {
-            int stock = DonneesMemoire.chargerProduits().get(idx).stock;
-            labelStockAvant.setText("Stock avant : " + stock + " L");
-            labelStockApres.setText("Stock apres : " + stock + " L");
+            List<Produit> produits = ProduitDAO.getAll();
+            if (idx < produits.size()) {
+                int stock = produits.get(idx).getStock();
+                labelStockAvant.setText("Stock avant : " + stock + " L");
+                labelStockApres.setText("Stock apres : " + stock + " L");
+            }
         }
     }
 
@@ -141,14 +150,24 @@ public class PageStock extends JPanel {
             if (idx == -1) { JOptionPane.showMessageDialog(this, "Aucun produit disponible !"); return; }
             int qte = Integer.parseInt(champQuantite.getText());
             if (qte <= 0) { JOptionPane.showMessageDialog(this, "La quantite doit etre superieure a 0 !"); return; }
-            DonneesMemoire.Produit p = DonneesMemoire.chargerProduits().get(idx);
-            p.stock += qte;
-            labelStockApres.setText("Stock apres : " + p.stock + " L");
-            DonneesMemoire.historiqueEntrees.add(new DonneesMemoire.Entree(p.designation, qte, DonneesMemoire.aujourdHui()));
-            modeleHistorique.addRow(new Object[]{p.designation, qte, DonneesMemoire.aujourdHui(), "Supprimer"});
-            JOptionPane.showMessageDialog(this, qte + " L ajoutes !");
-            champQuantite.setText("");
-            remplirCombo();
-        } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erreur de saisie !"); }
+
+            List<Produit> produits = ProduitDAO.getAll();
+            Produit p = produits.get(idx);
+            String numProd = p.getNumProd();
+            String idEntree = EntreeDAO.genererId();
+            String dateAujourdhui = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+            Entree entree = new Entree(idEntree, p.getDesignation(), qte, dateAujourdhui);
+            if (EntreeDAO.ajouter(entree, numProd)) {
+                labelStockApres.setText("Stock apres : " + (p.getStock() + qte) + " L");
+                JOptionPane.showMessageDialog(this, qte + " L ajoutes au stock !");
+                champQuantite.setText("");
+                remplirCombo();
+            } else {
+                JOptionPane.showMessageDialog(this, "Erreur lors de l'entree !");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Erreur de saisie !");
+        }
     }
 }

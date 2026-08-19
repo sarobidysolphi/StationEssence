@@ -8,8 +8,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
 import java.io.FileOutputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,6 @@ public class PageEntretiens extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 16, 0));
         contenu.setBackground(Theme.FOND_CLAIR);
 
-        // Formulaire
         JPanel formCard = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -64,22 +64,32 @@ public class PageEntretiens extends JPanel {
         gbc.gridx = 0; gbc.gridy = 0; formCard.add(new JLabel("Nom du client :"), gbc);
         gbc.gridx = 1; champNom = new JTextField(15); formCard.add(champNom, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1; formCard.add(new JLabel("Voiture :"), gbc);
+        gbc.gridx = 0; gbc.gridy = 1; formCard.add(new JLabel("Immatriculation :"), gbc);
         gbc.gridx = 1; champVoiture = new JTextField(15); formCard.add(champVoiture, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; formCard.add(new JLabel("Services :"), gbc);
         gbc.gridx = 1; gbc.gridy = 2;
         checkPanel = new JPanel(new GridLayout(0, 1));
         checkPanel.setBackground(Color.WHITE);
-        genererCheckBoxes();
+        checkPanel.setBorder(BorderFactory.createLineBorder(Theme.BORDURE_CLAIRE));
         formCard.add(checkPanel, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; formCard.add(new JLabel("Total :"), gbc);
-        gbc.gridx = 1; labelTotal = new JLabel("0 Ar"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
+        gbc.gridx = 1; labelTotal = new JLabel("0 FCFA"); labelTotal.setFont(Theme.POLICE_GRANDE); labelTotal.setForeground(Theme.BLEU_ACCENT); formCard.add(labelTotal, gbc);
+
+        JPanel btnPanel = new JPanel();
+        btnPanel.setOpaque(false);
+        JButton btnActualiser = MacButton.ghost("Actualiser services");
+        btnActualiser.addActionListener(e -> genererCheckBoxes());
+        btnPanel.add(btnActualiser);
+        JButton btnValider = MacButton.primary("Enregistrer");
+        btnValider.addActionListener(e -> validerEntretien());
+        btnPanel.add(btnValider);
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
+        formCard.add(btnPanel, gbc);
 
         contenu.add(formCard);
 
-        // Droite
         JPanel droite = new JPanel(new BorderLayout());
         droite.setOpaque(false);
 
@@ -108,9 +118,9 @@ public class PageEntretiens extends JPanel {
 
         JPanel basRecu = new JPanel();
         basRecu.setOpaque(false);
-        btnPDF = MacButton.primary("Enregistrer et imprimer");
+        btnPDF = MacButton.primary("Generer le PDF");
         btnPDF.setEnabled(false);
-        btnPDF.addActionListener(e -> validerEtImprimer());
+        btnPDF.addActionListener(e -> genererPDFFromRecu());
         basRecu.add(btnPDF);
         recuCard.add(basRecu, BorderLayout.SOUTH);
 
@@ -130,9 +140,9 @@ public class PageEntretiens extends JPanel {
         histTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
         histCard.add(histTitre, BorderLayout.NORTH);
 
-        String[] cols = {"CLIENT", "VOITURE", "SERVICES", "TOTAL", "DATE", "ACTIONS"};
+        String[] cols = {"NUM", "SERVICE", "VOITURE", "CLIENT", "DATE"};
         modeleHistorique = new DefaultTableModel(new Object[][]{}, cols) {
-            @Override public boolean isCellEditable(int row, int col) { return col == 5; }
+            @Override public boolean isCellEditable(int row, int col) { return false; }
         };
         tableau = new StyledTable(modeleHistorique);
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
@@ -143,32 +153,23 @@ public class PageEntretiens extends JPanel {
 
         add(contenu, BorderLayout.CENTER);
 
+        genererCheckBoxes();
+        rafraichirHistorique();
+
         javax.swing.event.ChangeListener update = e -> calculerTotal();
         for (JCheckBox chk : checkBoxServices) {
             chk.addChangeListener(update);
         }
-
-        tableau.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = tableau.rowAtPoint(evt.getPoint());
-                int col = tableau.columnAtPoint(evt.getPoint());
-                if (row >= 0 && col == 5) {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cet entretien ?", "Confirmation", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        DonneesMemoire.historiqueEntretiens.remove(row);
-                        modeleHistorique.removeRow(row);
-                    }
-                }
-            }
-        });
     }
 
-    private void genererCheckBoxes() {
+    public void genererCheckBoxes() {
         checkBoxServices.clear();
         checkPanel.removeAll();
-        for (DonneesMemoire.Service s : DonneesMemoire.chargerServices()) {
-            JCheckBox chk = new JCheckBox(s.nom + " - " + String.format("%,d", s.prix) + " Ar");
+        List<ServiceEnt> services = ServiceDAO.getAll();
+        for (ServiceEnt s : services) {
+            JCheckBox chk = new JCheckBox(s.getService() + " - " + String.format("%,d", s.getPrix()) + " FCFA");
             chk.setFont(Theme.POLICE_NORMALE);
+            chk.putClientProperty("service", s);
             checkBoxServices.add(chk);
             checkPanel.add(chk);
         }
@@ -178,54 +179,79 @@ public class PageEntretiens extends JPanel {
 
     private void calculerTotal() {
         int total = 0;
-        for (int i = 0; i < checkBoxServices.size(); i++) {
-            if (checkBoxServices.get(i).isSelected()) {
-                total += DonneesMemoire.chargerServices().get(i).prix;
+        for (JCheckBox chk : checkBoxServices) {
+            if (chk.isSelected()) {
+                ServiceEnt s = (ServiceEnt) chk.getClientProperty("service");
+                if (s != null) total += s.getPrix();
             }
         }
-        labelTotal.setText(String.format("%,d", total) + " Ar");
+        labelTotal.setText(String.format("%,d", total) + " FCFA");
 
         String nom = champNom.getText().trim();
         String voiture = champVoiture.getText().trim();
         String recu = "****************************\n";
         recu += "      STATION ESSENCE\n";
         recu += "****************************\n\n";
-        recu += "Date    : " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + "\n";
+        recu += "Date    : " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + "\n";
         recu += "Client  : " + (nom.isEmpty() ? "---" : nom) + "\n";
         if (!voiture.isEmpty()) recu += "Voiture : " + voiture + "\n";
         recu += "----------------------------\n";
-        for (int i = 0; i < checkBoxServices.size(); i++) {
-            if (checkBoxServices.get(i).isSelected()) {
-                DonneesMemoire.Service s = DonneesMemoire.chargerServices().get(i);
-                recu += String.format("%-18s %,10d\n", s.nom, s.prix);
+        for (JCheckBox chk : checkBoxServices) {
+            if (chk.isSelected()) {
+                ServiceEnt s = (ServiceEnt) chk.getClientProperty("service");
+                if (s != null) recu += String.format("%-18s %,10d\n", s.getService(), s.getPrix());
             }
         }
         recu += "----------------------------\n";
-        recu += String.format("%-18s %,10d Ar\n", "TOTAL", total);
+        recu += String.format("%-18s %,10d FCFA\n", "TOTAL", total);
         recu += "----------------------------\n\n";
         recu += "   Merci de votre visite";
         zoneRecu.setText(recu);
         btnPDF.setEnabled(total > 0 && !nom.isEmpty());
     }
 
-    private void validerEtImprimer() {
-        int total = 0;
-        List<String> servicesSelectionnes = new ArrayList<>();
-        for (int i = 0; i < checkBoxServices.size(); i++) {
-            if (checkBoxServices.get(i).isSelected()) {
-                DonneesMemoire.Service s = DonneesMemoire.chargerServices().get(i);
-                total += s.prix;
-                servicesSelectionnes.add(s.nom);
+    private void validerEntretien() {
+        String nom = champNom.getText().trim();
+        String voiture = champVoiture.getText().trim();
+
+        if (nom.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Veuillez entrer un nom de client !");
+            return;
+        }
+
+        boolean hasSelection = false;
+        for (JCheckBox chk : checkBoxServices) {
+            if (chk.isSelected()) { hasSelection = true; break; }
+        }
+        if (!hasSelection) {
+            JOptionPane.showMessageDialog(this, "Veuillez selectionner au moins un service !");
+            return;
+        }
+
+        for (JCheckBox chk : checkBoxServices) {
+            if (chk.isSelected()) {
+                ServiceEnt s = (ServiceEnt) chk.getClientProperty("service");
+                if (s != null) {
+                    String numEntr = EntretienDAO.genererId();
+                    String dateAujourdhui = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    Entretien ent = new Entretien(numEntr, s.getService(), voiture, nom, dateAujourdhui);
+                    EntretienDAO.ajouter(ent, s.getNumServ());
+                }
             }
         }
 
-        String nom = champNom.getText().trim();
-        String voiture = champVoiture.getText().trim();
-        String servicesStr = String.join(", ", servicesSelectionnes);
+        rafraichirHistorique();
+        genererPDFFromRecu();
+        JOptionPane.showMessageDialog(this, "Entretien enregistre !");
 
-        DonneesMemoire.historiqueEntretiens.add(new DonneesMemoire.Entretien(nom, voiture, servicesStr, total, DonneesMemoire.aujourdHui()));
-        modeleHistorique.addRow(new Object[]{nom, voiture, servicesStr, String.format("%,d", total) + " Ar", DonneesMemoire.aujourdHui(), "Supprimer"});
+        champNom.setText(""); champVoiture.setText("");
+        for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
+        labelTotal.setText("0 FCFA");
+        zoneRecu.setText("Remplissez le formulaire et cochez des services.");
+        btnPDF.setEnabled(false);
+    }
 
+    private void genererPDFFromRecu() {
         try {
             String chemin = System.getProperty("user.home") + "\\Desktop\\recu_entretien.pdf";
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
@@ -237,11 +263,12 @@ public class PageEntretiens extends JPanel {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur PDF : " + e.getMessage());
         }
+    }
 
-        champNom.setText(""); champVoiture.setText("");
-        for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
-        labelTotal.setText("0 Ar");
-        zoneRecu.setText("Remplissez le formulaire et cochez des services.");
-        btnPDF.setEnabled(false);
+    private void rafraichirHistorique() {
+        modeleHistorique.setRowCount(0);
+        for (Entretien e : EntretienDAO.getAll()) {
+            modeleHistorique.addRow(new Object[]{e.getNumEntr(), e.getNumServ(), e.getImmatriculation(), e.getNomClient(), e.getDateEntretien()});
+        }
     }
 }

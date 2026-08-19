@@ -24,7 +24,6 @@ public class StationEssenceSwing {
             fenetre.setUndecorated(true);
             fenetre.setBackground(new Color(0, 0, 0, 0));
 
-            // --- BARRE DE TITRE ---
             JPanel barreTitre = new JPanel(new BorderLayout());
             barreTitre.setOpaque(false);
             barreTitre.setPreferredSize(new Dimension(1150, 38));
@@ -46,7 +45,6 @@ public class StationEssenceSwing {
             JPanel boutonsControle = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 5));
             boutonsControle.setOpaque(false);
 
-            // Boutons macOS : Fermer (Rouge), Réduire (Jaune), Agrandir (Vert)
             JButton btnClose = creerBoutonFenetre(new Color(255, 95, 86), "\u2715");
             btnClose.addActionListener(e -> System.exit(0));
 
@@ -69,7 +67,6 @@ public class StationEssenceSwing {
             barreTitre.add(titreApp, BorderLayout.WEST);
             barreTitre.add(boutonsControle, BorderLayout.EAST);
 
-            // --- SIDEBAR macOS ---
             JPanel menuPanel = new JPanel() {
                 @Override
                 protected void paintComponent(Graphics g) {
@@ -85,7 +82,6 @@ public class StationEssenceSwing {
             menuPanel.setPreferredSize(new Dimension(220, 750));
             menuPanel.setBorder(new EmptyBorder(50, 12, 12, 12));
 
-            // Logo
             JLabel logoLabel = new JLabel("\u26FD  Station Essence");
             logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
             logoLabel.setForeground(Color.WHITE);
@@ -102,7 +98,6 @@ public class StationEssenceSwing {
 
             menuPanel.add(creerSeparateurSidebar());
 
-            // Horloge
             JLabel clockLabel = new JLabel(" ", SwingConstants.CENTER);
             clockLabel.setForeground(Theme.TEXTE_TERTIAIRE);
             clockLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -128,7 +123,7 @@ public class StationEssenceSwing {
             contentPanel.add(new PageTableauBord(), "Tableau de bord");
             contentPanel.add(new PageProduits(), "Produits");
             contentPanel.add(new PageStock(), "Entrees de stock");
-            contentPanel.add(new PageVente(), "Vente carburant");
+            contentPanel.add(new PageAchat(), "Vente carburant");
             contentPanel.add(new PageServices(), "Services");
             contentPanel.add(new PageEntretiens(), "Entretiens");
             contentPanel.add(new PageStatistiques(), "Statistiques");
@@ -159,6 +154,8 @@ public class StationEssenceSwing {
                             ((PageProduits) c).rafraichirTableau();
                         if (c instanceof PageServices && nom.equals("Services"))
                             ((PageServices) c).rafraichirTableau();
+                        if (c instanceof PageEntretiens && nom.equals("Entretiens"))
+                            ((PageEntretiens) c).genererCheckBoxes();
                         if (c instanceof PageRecettes && nom.equals("Recettes"))
                             ((PageRecettes) c).rafraichir();
                         if (c instanceof PageStatistiques && nom.equals("Statistiques"))
@@ -175,7 +172,6 @@ public class StationEssenceSwing {
             menuPanel.add(clockLabel);
             menuPanel.add(Box.createVerticalStrut(4));
 
-            // --- PANNEAU PRINCIPAL ---
             JPanel mainPanel = new JPanel(new BorderLayout()) {
                 @Override
                 protected void paintComponent(Graphics g) {
@@ -192,6 +188,7 @@ public class StationEssenceSwing {
             mainPanel.add(contentPanel, BorderLayout.CENTER);
 
             fenetre.add(mainPanel);
+            fenetre.setLocationRelativeTo(null);
             fenetre.setVisible(true);
         });
     }
@@ -204,12 +201,11 @@ public class StationEssenceSwing {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(couleur);
                 g2.fill(new Ellipse2D.Double(0, 0, 14, 14));
-                g2.setColor(new Color(0, 0, 0, 80));
+                g2.setColor(new Color(0, 0, 0, 100));
                 g2.setFont(new Font("Segoe UI", Font.BOLD, 9));
                 FontMetrics fm = g2.getFontMetrics();
                 int x = (14 - fm.stringWidth(symbole)) / 2;
                 int y = (14 - fm.getHeight()) / 2 + fm.getAscent();
-                g2.setColor(new Color(0, 0, 0, 100));
                 g2.drawString(symbole, x, y);
             }
         };

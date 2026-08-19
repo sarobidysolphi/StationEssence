@@ -3,7 +3,7 @@ package stationessenceswing;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
+import java.util.List;
 
 public class PageTableauBord extends JPanel {
 
@@ -38,7 +38,7 @@ public class PageTableauBord extends JPanel {
         labelAlertes = new JLabel("0");
         labelReferences = new JLabel("0");
 
-        cartesPanel.add(creerCarteApple("Recette du jour", labelRecette, Theme.BLEU_ACCENT, "\uD83D\uDCB0"));
+        cartesPanel.add(creerCarteApple("Recette totale", labelRecette, Theme.BLEU_ACCENT, "\uD83D\uDCB0"));
         cartesPanel.add(creerCarteApple("Stock total", labelStockTotal, Theme.VERT_ACCENT, "\u26FD"));
         cartesPanel.add(creerCarteApple("En alerte", labelAlertes, Theme.ROUGE_ACCENT, "\u26A0\uFE0F"));
         cartesPanel.add(creerCarteApple("References", labelReferences, Theme.VIOLET_ACCENT, "\uD83D\uDCCB"));
@@ -66,10 +66,7 @@ public class PageTableauBord extends JPanel {
 
         JPanel stockWrapper = new JPanel(new BorderLayout());
         stockWrapper.setBackground(Theme.FOND_CARTE);
-        stockWrapper.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Theme.BORDURE_CLAIRE),
-            new EmptyBorder(0, 0, 0, 0)
-        ));
+        stockWrapper.setBorder(BorderFactory.createLineBorder(Theme.BORDURE_CLAIRE));
         JLabel stockTitre = new JLabel("   Stock actuel");
         stockTitre.setFont(Theme.POLICE_GRAS);
         stockTitre.setForeground(Theme.TEXTE_FONCE);
@@ -79,11 +76,8 @@ public class PageTableauBord extends JPanel {
 
         JPanel alertesWrapper = new JPanel(new BorderLayout());
         alertesWrapper.setBackground(Theme.FOND_CARTE);
-        alertesWrapper.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Theme.BORDURE_CLAIRE),
-            new EmptyBorder(0, 0, 0, 0)
-        ));
-        JLabel alertesTitre = new JLabel("   Alertes de stock");
+        alertesWrapper.setBorder(BorderFactory.createLineBorder(Theme.BORDURE_CLAIRE));
+        JLabel alertesTitre = new JLabel("   Alertes de stock (< 10 L)");
         alertesTitre.setFont(Theme.POLICE_GRAS);
         alertesTitre.setForeground(Theme.TEXTE_FONCE);
         alertesTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
@@ -93,12 +87,7 @@ public class PageTableauBord extends JPanel {
         basPanel.add(stockWrapper);
         basPanel.add(alertesWrapper);
 
-        JPanel basContainer = new JPanel(new BorderLayout());
-        basContainer.setBackground(Theme.FOND_CLAIR);
-        basContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
-        basContainer.add(basPanel, BorderLayout.CENTER);
-
-        add(basContainer, BorderLayout.SOUTH);
+        add(basPanel, BorderLayout.SOUTH);
 
         rafraichir();
     }
@@ -115,7 +104,6 @@ public class PageTableauBord extends JPanel {
                 g2.setColor(Theme.FOND_CARTE);
                 g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 16, 16);
                 g2.setColor(couleur);
-                g2.setStroke(new BasicStroke(0));
                 g2.fillRoundRect(0, 0, 4, getHeight() - 2, 4, 4);
             }
         };
@@ -144,41 +132,35 @@ public class PageTableauBord extends JPanel {
     }
 
     public void rafraichir() {
-        int totalRecette = DonneesMemoire.recetteDuJour;
-        for (DonneesMemoire.Entretien e : DonneesMemoire.historiqueEntretiens) {
-            totalRecette += e.total;
-        }
-        labelRecette.setText(String.format("%,d", totalRecette) + " Ar");
+        int totalRecette = AchatDAO.getRecetteTotale();
+        labelRecette.setText(String.format("%,d", totalRecette) + " FCFA");
 
+        List<Produit> produits = ProduitDAO.getAll();
         int stockTotal = 0;
-        for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) stockTotal += p.stock;
+        for (Produit p : produits) stockTotal += p.getStock();
         labelStockTotal.setText(stockTotal + " L");
 
         int alerte = 0;
-        for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
-            if (!p.getStatut().equals("OK")) alerte++;
+        for (Produit p : produits) {
+            if (p.getStock() < 10) alerte++;
         }
         labelAlertes.setText(String.valueOf(alerte));
-        labelReferences.setText(String.valueOf(DonneesMemoire.chargerProduits().size()));
+        labelReferences.setText(String.valueOf(produits.size()));
 
         stockPanel.removeAll();
-        alertesPanel.removeAll();
-
-        for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
+        for (Produit p : produits) {
             JPanel ligne = new JPanel(new BorderLayout());
             ligne.setBackground(Theme.FOND_CARTE);
             ligne.setBorder(new EmptyBorder(6, 4, 6, 4));
-            JLabel nom = new JLabel(p.designation);
+            JLabel nom = new JLabel(p.getDesignation());
             nom.setFont(Theme.POLICE_NORMALE);
             nom.setForeground(Theme.TEXTE_FONCE);
-            JLabel qte = new JLabel(p.stock + " L");
+            JLabel qte = new JLabel(p.getStock() + " L");
             qte.setFont(Theme.POLICE_GRAS);
 
-            switch (p.getStatut()) {
-                case "RUPTURE": qte.setForeground(Theme.ROUGE_ACCENT); break;
-                case "FAIBLE": qte.setForeground(Theme.ORANGE_ACCENT); break;
-                default: qte.setForeground(Theme.VERT_ACCENT); break;
-            }
+            if (p.getStock() < 10) qte.setForeground(Theme.ROUGE_ACCENT);
+            else qte.setForeground(Theme.VERT_ACCENT);
+
             ligne.add(nom, BorderLayout.WEST);
             ligne.add(qte, BorderLayout.EAST);
             stockPanel.add(ligne);
@@ -187,16 +169,17 @@ public class PageTableauBord extends JPanel {
         stockPanel.revalidate();
         stockPanel.repaint();
 
+        alertesPanel.removeAll();
         boolean aDesAlertes = false;
-        for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
-            if (!p.getStatut().equals("OK")) {
+        for (Produit p : produits) {
+            if (p.getStock() < 10) {
                 aDesAlertes = true;
-                String statutText = p.getStatut().equals("RUPTURE") ? "RUPTURE" : "Stock faible";
-                JLabel msg = new JLabel("  " + statutText + " : " + p.designation + " (" + p.stock + " L)");
+                String statutText = p.getStock() <= 0 ? "RUPTURE" : "Stock faible";
+                JLabel msg = new JLabel("  " + statutText + " : " + p.getDesignation() + " (" + p.getStock() + " L)");
                 msg.setFont(Theme.POLICE_NORMALE);
                 msg.setOpaque(true);
-                msg.setBackground(p.getStatut().equals("RUPTURE") ? new Color(255, 59, 48, 15) : new Color(255, 149, 0, 15));
-                msg.setForeground(p.getStatut().equals("RUPTURE") ? Theme.ROUGE_ACCENT : Theme.ORANGE_ACCENT);
+                msg.setBackground(p.getStock() <= 0 ? new Color(255, 59, 48, 15) : new Color(255, 149, 0, 15));
+                msg.setForeground(p.getStock() <= 0 ? Theme.ROUGE_ACCENT : Theme.ORANGE_ACCENT);
                 msg.setBorder(new EmptyBorder(4, 4, 4, 4));
                 alertesPanel.add(msg);
                 alertesPanel.add(Box.createVerticalStrut(2));

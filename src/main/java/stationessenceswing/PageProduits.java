@@ -5,13 +5,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
+import java.util.List;
 
 public class PageProduits extends JPanel {
     private DefaultTableModel modele;
     private StyledTable tableau;
     private PlaceholderTextField champRecherche;
-    private JComboBox<String> comboFiltreType;
 
     public PageProduits() {
         setLayout(new BorderLayout());
@@ -39,15 +38,10 @@ public class PageProduits extends JPanel {
         champRecherche.setPreferredSize(new Dimension(220, 34));
         champRecherche.setFont(Theme.POLICE_NORMALE);
 
-        comboFiltreType = new JComboBox<>(new String[]{"Tous les types", "Essence", "Gasoil", "Petrole"});
-        comboFiltreType.setPreferredSize(new Dimension(130, 34));
-        comboFiltreType.setFont(Theme.POLICE_NORMALE);
-
         JButton btnNouveau = MacButton.primary("+ Nouveau");
         btnNouveau.addActionListener(e -> ajouterProduit());
 
         outilPanel.add(champRecherche);
-        outilPanel.add(comboFiltreType);
         outilPanel.add(btnNouveau);
 
         JPanel tableCard = new JPanel(new BorderLayout()) {
@@ -62,20 +56,19 @@ public class PageProduits extends JPanel {
             }
         };
         tableCard.setOpaque(false);
-        tableCard.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
         topPanel.add(outilPanel, BorderLayout.CENTER);
         tableCard.add(topPanel, BorderLayout.NORTH);
 
-        String[] colonnes = {"Designation", "Type", "Stock (L)", "Seuil", "Prix/L", "Statut", "ACTIONS"};
+        String[] colonnes = {"ID", "DESIGNATION", "STOCK (L)", "STATUT", "ACTIONS"};
         modele = new DefaultTableModel(new Object[][]{}, colonnes) {
-            @Override public boolean isCellEditable(int row, int col) { return col == 6; }
+            @Override public boolean isCellEditable(int row, int col) { return col == 4; }
         };
         tableau = new StyledTable(modele);
-        tableau.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer());
-        tableau.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor(new JCheckBox()));
+        tableau.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer());
+        tableau.getColumnModel().getColumn(4).setCellEditor(new ButtonEditor(new JCheckBox()));
 
         JScrollPane scroll = new JScrollPane(tableau);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -91,51 +84,59 @@ public class PageProduits extends JPanel {
             public void removeUpdate(javax.swing.event.DocumentEvent e) { rafraichirTableau(); }
             public void insertUpdate(javax.swing.event.DocumentEvent e) { rafraichirTableau(); }
         });
-        comboFiltreType.addActionListener(e -> rafraichirTableau());
     }
 
     private void ajouterProduit() {
-        String nom = JOptionPane.showInputDialog(this, "Nom du nouveau produit :");
-        if (nom == null || nom.trim().isEmpty()) return;
+        JTextField champId = new JTextField(10);
+        JTextField champDesign = new JTextField(15);
+        JTextField champStock = new JTextField(10);
 
-        String[] types = {"Essence", "Gasoil", "Petrole"};
-        String type = (String) JOptionPane.showInputDialog(this, "Type :", "Type",
-                JOptionPane.QUESTION_MESSAGE, null, types, types[0]);
-        if (type == null) return;
+        JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+        form.add(new JLabel("Num Produit :")); form.add(champId);
+        form.add(new JLabel("Designation :")); form.add(champDesign);
+        form.add(new JLabel("Stock (L) :")); form.add(champStock);
 
-        try {
-            int stock = Integer.parseInt(JOptionPane.showInputDialog(this, "Stock (L) :", "0"));
-            int seuil = Integer.parseInt(JOptionPane.showInputDialog(this, "Seuil d'alerte (L) :", "50"));
-            int prix = Integer.parseInt(JOptionPane.showInputDialog(this, "Prix / L (Ar) :", "0"));
-
-            int nouvelId = DonneesMemoire.listeProduits.size() + 1;
-            DonneesMemoire.listeProduits.add(new DonneesMemoire.Produit(nouvelId, nom.trim(), type, stock, seuil, prix));
-            rafraichirTableau();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Valeurs invalides !");
+        int result = JOptionPane.showConfirmDialog(this, form, "Nouveau produit", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                String id = champId.getText().trim();
+                String design = champDesign.getText().trim();
+                int stock = Integer.parseInt(champStock.getText().trim());
+                if (id.isEmpty() || design.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Remplissez tous les champs !");
+                    return;
+                }
+                if (ProduitDAO.ajouter(new Produit(id, design, stock))) {
+                    rafraichirTableau();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout !");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Stock invalide !");
+            }
         }
     }
 
     public void rafraichirTableau() {
         modele.setRowCount(0);
         String recherche = champRecherche.getText().toLowerCase();
-        String typeFiltre = (String) comboFiltreType.getSelectedItem();
 
-        for (DonneesMemoire.Produit p : DonneesMemoire.chargerProduits()) {
-            if (!recherche.isEmpty() && !p.designation.toLowerCase().contains(recherche)) continue;
-            if (!"Tous les types".equals(typeFiltre) && !p.type.equals(typeFiltre)) continue;
-            modele.addRow(new Object[]{p.designation, p.type, p.stock, p.seuil, p.prixParLitre, p.getStatut(), "Actions"});
+        List<Produit> produits = ProduitDAO.getAll();
+        for (Produit p : produits) {
+            if (!recherche.isEmpty() && !p.getDesignation().toLowerCase().contains(recherche)) continue;
+            String statut = p.getStock() < 10 ? (p.getStock() <= 0 ? "RUPTURE" : "FAIBLE") : "OK";
+            modele.addRow(new Object[]{p.getNumProd(), p.getDesignation(), p.getStock(), statut, "Actions"});
         }
 
         for (int i = 0; i < tableau.getRowCount(); i++) {
-            String statut = (String) modele.getValueAt(i, 5);
+            String statut = (String) modele.getValueAt(i, 3);
             final Color c;
             switch (statut) {
                 case "RUPTURE": c = Theme.ROUGE_ACCENT; break;
                 case "FAIBLE": c = Theme.ORANGE_ACCENT; break;
                 default: c = Theme.VERT_ACCENT; break;
             }
-            tableau.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+            tableau.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -187,33 +188,35 @@ public class PageProduits extends JPanel {
 
             btnModifier.addActionListener(e -> {
                 fireEditingStopped();
-                DonneesMemoire.Produit p = DonneesMemoire.listeProduits.get(currentRow);
-                String newName = JOptionPane.showInputDialog("Nouveau nom :", p.designation);
-                if (newName != null && !newName.trim().isEmpty()) {
-                    String[] types = {"Essence", "Gasoil", "Petrole"};
-                    String newType = (String) JOptionPane.showInputDialog(null, "Type :", "Type",
-                            JOptionPane.QUESTION_MESSAGE, null, types, p.type);
-                    if (newType != null) {
-                        try {
-                            int newStock = Integer.parseInt(JOptionPane.showInputDialog("Stock (L) :", p.stock));
-                            int newSeuil = Integer.parseInt(JOptionPane.showInputDialog("Seuil (L) :", p.seuil));
-                            int newPrix = Integer.parseInt(JOptionPane.showInputDialog("Prix/L (Ar) :", p.prixParLitre));
-                            p.designation = newName.trim();
-                            p.type = newType;
-                            p.stock = newStock;
-                            p.seuil = newSeuil;
-                            p.prixParLitre = newPrix;
-                            rafraichirTableau();
-                        } catch (Exception ex) {}
-                    }
+                List<Produit> produits = ProduitDAO.getAll();
+                if (currentRow >= produits.size()) return;
+                Produit p = produits.get(currentRow);
+
+                JTextField champDesign = new JTextField(p.getDesignation(), 15);
+                JTextField champStock = new JTextField(String.valueOf(p.getStock()), 10);
+
+                JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+                form.add(new JLabel("Designation :")); form.add(champDesign);
+                form.add(new JLabel("Stock (L) :")); form.add(champStock);
+
+                int result = JOptionPane.showConfirmDialog(null, form, "Modifier produit", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    try {
+                        p = new Produit(p.getNumProd(), champDesign.getText().trim(),
+                                Integer.parseInt(champStock.getText().trim()));
+                        ProduitDAO.modifier(p.getNumProd(), p);
+                        rafraichirTableau();
+                    } catch (Exception ex) {}
                 }
             });
 
             btnSupprimer.addActionListener(e -> {
                 fireEditingStopped();
+                List<Produit> produits = ProduitDAO.getAll();
+                if (currentRow >= produits.size()) return;
                 int confirm = JOptionPane.showConfirmDialog(null, "Supprimer ce produit ?", "Confirmation", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    DonneesMemoire.listeProduits.remove(currentRow);
+                    ProduitDAO.supprimer(produits.get(currentRow).getNumProd());
                     rafraichirTableau();
                 }
             });

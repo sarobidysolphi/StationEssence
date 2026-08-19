@@ -5,7 +5,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
+import java.util.List;
 
 public class PageServices extends JPanel {
     private DefaultTableModel modele;
@@ -62,13 +62,13 @@ public class PageServices extends JPanel {
         topPanel.add(outilPanel, BorderLayout.CENTER);
         tableCard.add(topPanel, BorderLayout.NORTH);
 
-        String[] colonnes = {"SERVICE", "PRIX (AR)", "ACTIONS"};
+        String[] colonnes = {"ID", "SERVICE", "PRIX (FCFA)", "ACTIONS"};
         modele = new DefaultTableModel(new Object[][]{}, colonnes) {
-            @Override public boolean isCellEditable(int row, int col) { return col == 2; }
+            @Override public boolean isCellEditable(int row, int col) { return col == 3; }
         };
         tableau = new StyledTable(modele);
-        tableau.getColumnModel().getColumn(2).setCellRenderer(new ButtonRenderer());
-        tableau.getColumnModel().getColumn(2).setCellEditor(new ButtonEditor(new JCheckBox()));
+        tableau.getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer());
+        tableau.getColumnModel().getColumn(3).setCellEditor(new ButtonEditor(new JCheckBox()));
 
         JScrollPane scroll = new JScrollPane(tableau);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -87,24 +87,42 @@ public class PageServices extends JPanel {
     }
 
     private void ajouterService() {
-        String nom = JOptionPane.showInputDialog(this, "Nom du nouveau service :");
-        if (nom == null || nom.trim().isEmpty()) return;
-        try {
-            String prixStr = JOptionPane.showInputDialog(this, "Prix (Ar) :");
-            int prix = Integer.parseInt(prixStr);
-            DonneesMemoire.listeServices.add(new DonneesMemoire.Service(DonneesMemoire.listeServices.size() + 1, nom, prix));
-            rafraichirTableau();
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Prix invalide !");
+        JTextField champId = new JTextField(10);
+        JTextField champNom = new JTextField(15);
+        JTextField champPrix = new JTextField(10);
+
+        JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+        form.add(new JLabel("Num Service :")); form.add(champId);
+        form.add(new JLabel("Nom :")); form.add(champNom);
+        form.add(new JLabel("Prix (FCFA) :")); form.add(champPrix);
+
+        int result = JOptionPane.showConfirmDialog(this, form, "Nouveau service", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                String id = champId.getText().trim();
+                String nom = champNom.getText().trim();
+                int prix = Integer.parseInt(champPrix.getText().trim());
+                if (id.isEmpty() || nom.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Remplissez tous les champs !");
+                    return;
+                }
+                if (ServiceDAO.ajouter(new ServiceEnt(id, nom, prix))) {
+                    rafraichirTableau();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout !");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Prix invalide !");
+            }
         }
     }
 
     public void rafraichirTableau() {
         modele.setRowCount(0);
         String recherche = champRecherche.getText().toLowerCase();
-        for (DonneesMemoire.Service s : DonneesMemoire.listeServices) {
-            if (!recherche.isEmpty() && !s.nom.toLowerCase().contains(recherche)) continue;
-            modele.addRow(new Object[]{s.nom, String.format("%,d", s.prix), "Actions"});
+        for (ServiceEnt s : ServiceDAO.getAll()) {
+            if (!recherche.isEmpty() && !s.getService().toLowerCase().contains(recherche)) continue;
+            modele.addRow(new Object[]{s.getNumServ(), s.getService(), String.format("%,d", s.getPrix()), "Actions"});
         }
     }
 
@@ -144,13 +162,23 @@ public class PageServices extends JPanel {
 
             btnModifier.addActionListener(e -> {
                 fireEditingStopped();
-                DonneesMemoire.Service s = DonneesMemoire.listeServices.get(currentRow);
-                String newNom = JOptionPane.showInputDialog("Nouveau nom :", s.nom);
-                if (newNom != null && !newNom.trim().isEmpty()) {
-                    String newPrixStr = JOptionPane.showInputDialog("Nouveau prix :", s.prix);
+                List<ServiceEnt> services = ServiceDAO.getAll();
+                if (currentRow >= services.size()) return;
+                ServiceEnt s = services.get(currentRow);
+
+                JTextField champNom = new JTextField(s.getService(), 15);
+                JTextField champPrix = new JTextField(String.valueOf(s.getPrix()), 10);
+
+                JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+                form.add(new JLabel("Nom :")); form.add(champNom);
+                form.add(new JLabel("Prix (FCFA) :")); form.add(champPrix);
+
+                int result = JOptionPane.showConfirmDialog(null, form, "Modifier service", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
                     try {
-                        s.nom = newNom;
-                        s.prix = Integer.parseInt(newPrixStr);
+                        s = new ServiceEnt(s.getNumServ(), champNom.getText().trim(),
+                                Integer.parseInt(champPrix.getText().trim()));
+                        ServiceDAO.modifier(s.getNumServ(), s);
                         rafraichirTableau();
                     } catch (Exception ex) {}
                 }
@@ -158,9 +186,11 @@ public class PageServices extends JPanel {
 
             btnSupprimer.addActionListener(e -> {
                 fireEditingStopped();
+                List<ServiceEnt> services = ServiceDAO.getAll();
+                if (currentRow >= services.size()) return;
                 int confirm = JOptionPane.showConfirmDialog(null, "Supprimer ce service ?", "Confirmation", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    DonneesMemoire.listeServices.remove(currentRow);
+                    ServiceDAO.supprimer(services.get(currentRow).getNumServ());
                     rafraichirTableau();
                 }
             });

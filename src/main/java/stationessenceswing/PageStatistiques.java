@@ -5,6 +5,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class PageStatistiques extends JPanel {
@@ -61,7 +63,19 @@ public class PageStatistiques extends JPanel {
         int xStart = 80;
         int yStart = 40;
 
-        int[] donnees = DonneesMemoire.getRecettes5DerniersMois();
+        List<String[]> recettes = AchatDAO.getRecettes5Mois();
+        int[] donnees = new int[5];
+        LocalDate now = LocalDate.now();
+        for (int i = 0; i < 5; i++) {
+            int moisCible = now.minusMonths(4 - i).getMonthValue();
+            for (String[] r : recettes) {
+                if (Integer.parseInt(r[0]) == moisCible) {
+                    donnees[i] = Integer.parseInt(r[1]);
+                    break;
+                }
+            }
+        }
+
         int maxVal = 1;
         for (int val : donnees) if (val > maxVal) maxVal = val;
 
@@ -75,35 +89,30 @@ public class PageStatistiques extends JPanel {
 
         int largeurBarre = 60;
         int espace = 40;
-        int debutX = xStart + 40;
 
-        LocalDate dateCourante = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yy", new Locale("fr", "FR"));
 
         for (int i = 0; i < donnees.length; i++) {
             int val = donnees[i];
             int hauteurBarre = (int)((double)val / maxVal * (hauteur - 40));
-            if (hauteurBarre == 0) hauteurBarre = 10;
+            if (hauteurBarre == 0 && val > 0) hauteurBarre = 10;
+            if (val == 0) hauteurBarre = 0;
 
-            int x = debutX + i * (largeurBarre + espace);
+            int x = xStart + 40 + i * (largeurBarre + espace);
             int y = hauteur + yStart - hauteurBarre;
 
-            // Ombre douce
             g2.setColor(new Color(0, 122, 255, 20));
-            g2.fillRoundRect(x + 3, y + 3, largeurBarre, hauteurBarre, 12, 12);
+            g2.fillRoundRect(x + 3, y + 3, largeurBarre, hauteurBarre > 0 ? hauteurBarre : 2, 12, 12);
 
-            // Barre avec degradé bleu macOS
             GradientPaint gradient = new GradientPaint(x, y, Theme.BLEU_ACCENT, x, hauteur + yStart, new Color(0, 90, 210));
             g2.setPaint(gradient);
-            g2.fillRoundRect(x, y, largeurBarre, hauteurBarre, 12, 12);
+            g2.fillRoundRect(x, y, largeurBarre, hauteurBarre > 0 ? hauteurBarre : 2, 12, 12);
 
-            // Valeur
             g2.setColor(Theme.TEXTE_FONCE);
             g2.setFont(Theme.POLICE_GRAS);
-            g2.drawString(String.format("%,d", val) + " Ar", x + 5, y - 10);
+            g2.drawString(String.format("%,d", val) + " FCFA", x + 5, y - 10);
 
-            // Mois
-            LocalDate moisDate = dateCourante.minusMonths(4 - i);
+            LocalDate moisDate = now.minusMonths(4 - i);
             String nomMois = moisDate.format(formatter);
             g2.setColor(Theme.TEXTE_SECONDAIRE);
             g2.setFont(Theme.POLICE_PETITE);
