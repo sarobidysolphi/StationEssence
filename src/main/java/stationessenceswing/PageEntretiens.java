@@ -168,11 +168,6 @@ public class PageEntretiens extends JPanel {
         genererCheckBoxes();
         rafraichirHistorique();
 
-        javax.swing.event.ChangeListener update = e -> calculerTotal();
-        for (JCheckBox chk : checkBoxServices) {
-            chk.addChangeListener(update);
-        }
-
         champNom.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
@@ -189,10 +184,12 @@ public class PageEntretiens extends JPanel {
         checkBoxServices.clear();
         checkPanel.removeAll();
         List<ServiceEnt> services = ServiceDAO.getAll();
+        javax.swing.event.ChangeListener update = e -> calculerTotal();
         for (ServiceEnt s : services) {
             JCheckBox chk = new JCheckBox(s.getService() + " - " + String.format("%,d", s.getPrix()) + " Ar");
             chk.setFont(Theme.POLICE_NORMALE);
             chk.putClientProperty("service", s);
+            chk.addChangeListener(update);
             checkBoxServices.add(chk);
             checkPanel.add(chk);
         }
