@@ -62,7 +62,7 @@ public class PageAchat extends JPanel {
 
         gbc.gridx = 0; gbc.gridy = 0;
         formCard.add(new JLabel("Carburant :"), gbc);
-        gbc.gridx = 1; comboProduit = new JComboBox<>(); remplirCombo(); formCard.add(comboProduit, gbc);
+        gbc.gridx = 1; comboProduit = new JComboBox<>(); formCard.add(comboProduit, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1; formCard.add(new JLabel("Client :"), gbc);
         gbc.gridx = 1; champClient = new JTextField(15); formCard.add(champClient, gbc);
@@ -162,6 +162,8 @@ public class PageAchat extends JPanel {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { calculerTotal(); }
         });
         btnValider.addActionListener(e -> validerVente());
+
+        remplirCombo();
     }
 
     private void remplirCombo() {
