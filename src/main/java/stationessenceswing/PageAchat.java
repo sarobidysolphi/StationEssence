@@ -142,7 +142,7 @@ public class PageAchat extends JPanel {
             achats = AchatDAO.getAll();
         }
         for (Achat a : achats) {
-            modeleHistorique.addRow(new Object[]{a.getNumAchat(), a.getNumProd(), a.getNomClient(), a.getNbrLitre(), a.getDateAchat(), "Supprimer"});
+            modeleHistorique.addRow(new Object[]{a.getNumAchat(), a.getNumProd(), a.getNomClient(), a.getNbrLitre(), a.getDateAchat(), "Actions"});
         }
     }
 
@@ -193,14 +193,17 @@ public class PageAchat extends JPanel {
     }
 
     class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private JButton btnSupprimer;
+        private JButton btnModifier, btnSupprimer;
         public ButtonRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
             setBackground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
+            btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
             btnSupprimer = MacButton.danger("Supprimer");
-            btnSupprimer.setPreferredSize(new Dimension(90, 28));
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
             btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            add(btnSupprimer);
+            add(btnModifier); add(btnSupprimer);
         }
         @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             return this;
@@ -209,16 +212,67 @@ public class PageAchat extends JPanel {
 
     class ButtonEditor extends DefaultCellEditor {
         private JPanel panel;
-        private JButton btnSupprimer;
+        private JButton btnModifier, btnSupprimer;
         private int currentRow;
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
             panel.setBackground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
+            btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
             btnSupprimer = MacButton.danger("Supprimer");
-            btnSupprimer.setPreferredSize(new Dimension(90, 28));
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
             btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            panel.add(btnSupprimer);
+            panel.add(btnModifier); panel.add(btnSupprimer);
+
+            btnModifier.addActionListener(e -> {
+                fireEditingStopped();
+                String numAchat = (String) modeleHistorique.getValueAt(currentRow, 0);
+                String designActuel = (String) modeleHistorique.getValueAt(currentRow, 1);
+                String clientActuel = (String) modeleHistorique.getValueAt(currentRow, 2);
+                int litresActuel = (int) modeleHistorique.getValueAt(currentRow, 3);
+
+                JComboBox<String> comboModif = new JComboBox<>();
+                List<Produit> produits = ProduitDAO.getAll();
+                int selectIdx = 0;
+                for (int i = 0; i < produits.size(); i++) {
+                    Produit p = produits.get(i);
+                    comboModif.addItem(p.getNumProd() + " - " + p.getDesignation() + " (" + p.getStock() + " L)");
+                    if (p.getDesignation().equals(designActuel)) selectIdx = i;
+                }
+                comboModif.setSelectedIndex(selectIdx);
+
+                JTextField champClientModif = new JTextField(clientActuel, 15);
+                JTextField champLitresModif = new JTextField(String.valueOf(litresActuel), 10);
+
+                JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+                form.add(new JLabel("Carburant :")); form.add(comboModif);
+                form.add(new JLabel("Client :")); form.add(champClientModif);
+                form.add(new JLabel("Litres :")); form.add(champLitresModif);
+
+                int result = JOptionPane.showConfirmDialog(null, form, "Modifier la vente", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    try {
+                        int newLitres = Integer.parseInt(champLitresModif.getText().trim());
+                        String newClient = champClientModif.getText().trim();
+                        if (newClient.isEmpty()) { JOptionPane.showMessageDialog(null, "Client obligatoire !"); return; }
+                        if (newLitres <= 0) { JOptionPane.showMessageDialog(null, "Quantite invalide !"); return; }
+                        int newIdx = comboModif.getSelectedIndex();
+                        if (newIdx < 0) return;
+                        String newNumProd = produits.get(newIdx).getNumProd();
+                        if (produits.get(newIdx).getStock() + litresActuel < newLitres) {
+                            JOptionPane.showMessageDialog(null, "Stock insuffisant ! Il reste " + produits.get(newIdx).getStock() + " L.");
+                            return;
+                        }
+                        AchatDAO.modifier(numAchat, newNumProd, newClient, newLitres);
+                        rafraichirHistorique();
+                        remplirCombo();
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Quantite invalide !");
+                    }
+                }
+            });
 
             btnSupprimer.addActionListener(e -> {
                 fireEditingStopped();
@@ -227,6 +281,7 @@ public class PageAchat extends JPanel {
                     String numAchat = (String) modeleHistorique.getValueAt(currentRow, 0);
                     AchatDAO.supprimer(numAchat);
                     rafraichirHistorique();
+                    remplirCombo();
                 }
             });
         }
@@ -234,6 +289,6 @@ public class PageAchat extends JPanel {
             currentRow = row;
             return panel;
         }
-        @Override public Object getCellEditorValue() { return "Supprimer"; }
+        @Override public Object getCellEditorValue() { return "Actions"; }
     }
 }

@@ -93,6 +93,8 @@ public class PageStock extends JPanel {
             @Override public boolean isCellEditable(int row, int col) { return col == 4; }
         };
         tableau = new StyledTable(modeleHistorique);
+        tableau.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer());
+        tableau.getColumnModel().getColumn(4).setCellEditor(new ButtonEditor(new JCheckBox()));
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
         contenu.add(histCard);
@@ -100,21 +102,6 @@ public class PageStock extends JPanel {
 
         comboProduits.addActionListener(e -> mettreAJourStockAvant());
         btnValider.addActionListener(e -> validerEntree());
-
-        tableau.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = tableau.rowAtPoint(evt.getPoint());
-                int col = tableau.columnAtPoint(evt.getPoint());
-                if (row >= 0 && col == 4) {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cette entree ?", "Confirmation", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        String numEntree = (String) modeleHistorique.getValueAt(row, 0);
-                        EntreeDAO.supprimer(numEntree);
-                        remplirCombo();
-                    }
-                }
-            }
-        });
 
         remplirCombo();
     }
@@ -127,7 +114,7 @@ public class PageStock extends JPanel {
         }
         modeleHistorique.setRowCount(0);
         for (Entree e : EntreeDAO.getAll()) {
-            modeleHistorique.addRow(new Object[]{e.getNumEntree(), e.getNumProd(), e.getStockEntree(), e.getDateEntree(), "Supprimer"});
+            modeleHistorique.addRow(new Object[]{e.getNumEntree(), e.getNumProd(), e.getStockEntree(), e.getDateEntree(), "Actions"});
         }
         mettreAJourStockAvant();
     }
@@ -169,5 +156,82 @@ public class PageStock extends JPanel {
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Erreur de saisie !");
         }
+    }
+
+    class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
+        private JButton btnModifier, btnSupprimer;
+        public ButtonRenderer() {
+            setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
+            setBackground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
+            btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
+            btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            add(btnModifier); add(btnSupprimer);
+        }
+        @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return this;
+        }
+    }
+
+    class ButtonEditor extends DefaultCellEditor {
+        private JPanel panel;
+        private JButton btnModifier, btnSupprimer;
+        private int currentRow;
+        public ButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+            panel.setBackground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
+            btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
+            btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            panel.add(btnModifier); panel.add(btnSupprimer);
+
+            btnModifier.addActionListener(e -> {
+                fireEditingStopped();
+                String numEntree = (String) modeleHistorique.getValueAt(currentRow, 0);
+                String numProd = (String) modeleHistorique.getValueAt(currentRow, 1);
+                int qteActuelle = (int) modeleHistorique.getValueAt(currentRow, 2);
+
+                JTextField champQte = new JTextField(String.valueOf(qteActuelle), 10);
+                JPanel form = new JPanel(new GridLayout(1, 2, 8, 8));
+                form.add(new JLabel("Quantite (L) :")); form.add(champQte);
+
+                int result = JOptionPane.showConfirmDialog(null, form, "Modifier l'entree", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    try {
+                        int nouvelleQte = Integer.parseInt(champQte.getText().trim());
+                        if (nouvelleQte <= 0) { JOptionPane.showMessageDialog(null, "La quantite doit etre superieure a 0 !"); return; }
+                        Produit p = ProduitDAO.getById(numProd);
+                        if (p != null) {
+                            EntreeDAO.modifier(numEntree, p.getNumProd(), nouvelleQte);
+                        }
+                        remplirCombo();
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Quantite invalide !");
+                    }
+                }
+            });
+
+            btnSupprimer.addActionListener(e -> {
+                fireEditingStopped();
+                int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cette entree ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    String numEntree = (String) modeleHistorique.getValueAt(currentRow, 0);
+                    EntreeDAO.supprimer(numEntree);
+                    remplirCombo();
+                }
+            });
+        }
+        @Override public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            currentRow = row;
+            return panel;
+        }
+        @Override public Object getCellEditorValue() { return "Actions"; }
     }
 }

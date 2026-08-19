@@ -48,6 +48,32 @@ public class AchatDAO {
         }
     }
 
+    public static boolean modifier(String numAchat, String numProd, String nomClient, int nbrLitre) {
+        try (Connection conn = ConnexionBD.getConnection()) {
+            PreparedStatement psGet = conn.prepareStatement("SELECT numProd, nbrLitre FROM ACHAT WHERE numAchat=?");
+            psGet.setString(1, numAchat);
+            ResultSet rs = psGet.executeQuery();
+            if (rs.next()) {
+                String ancienProd = rs.getString("numProd");
+                int ancienLitre = rs.getInt("nbrLitre");
+                ProduitDAO.ajouterStock(ancienProd, ancienLitre);
+                PreparedStatement psUpd = conn.prepareStatement("UPDATE ACHAT SET numProd=?, nomClient=?, nbrLitre=? WHERE numAchat=?");
+                psUpd.setString(1, numProd);
+                psUpd.setString(2, nomClient);
+                psUpd.setInt(3, nbrLitre);
+                psUpd.setString(4, numAchat);
+                boolean ok = psUpd.executeUpdate() > 0;
+                if (ok) {
+                    ProduitDAO.retirerStock(numProd, nbrLitre);
+                }
+                return ok;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static boolean supprimer(String numAchat) {
         try (Connection conn = ConnexionBD.getConnection()) {
             PreparedStatement psGet = conn.prepareStatement(

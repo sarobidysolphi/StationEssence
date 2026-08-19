@@ -144,19 +144,14 @@ public class PageEntretiens extends JPanel {
         histTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
         histCard.add(histTitre, BorderLayout.NORTH);
 
-        String[] cols = {"NUM", "SERVICE", "VOITURE", "CLIENT", "DATE"};
+        String[] cols = {"NUM", "SERVICE", "VOITURE", "CLIENT", "DATE", "ACTIONS"};
         modeleHistorique = new DefaultTableModel(new Object[][]{}, cols) {
-            @Override public boolean isCellEditable(int row, int col) { return false; }
+            @Override public boolean isCellEditable(int row, int col) { return col == 5; }
         };
         tableau = new StyledTable(modeleHistorique);
+        tableau.getColumnModel().getColumn(5).setCellRenderer(new ButtonRenderer());
+        tableau.getColumnModel().getColumn(5).setCellEditor(new ButtonEditor(new JCheckBox()));
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
-
-        JPanel histBas = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        histBas.setOpaque(false);
-        JButton btnSupprimer = MacButton.danger("Supprimer la selection");
-        btnSupprimer.addActionListener(e -> supprimerSelection());
-        histBas.add(btnSupprimer);
-        histCard.add(histBas, BorderLayout.SOUTH);
 
         droite.add(recuCard, BorderLayout.NORTH);
         droite.add(histCard, BorderLayout.CENTER);
@@ -315,21 +310,99 @@ public class PageEntretiens extends JPanel {
     public void rafraichirHistorique() {
         modeleHistorique.setRowCount(0);
         for (Entretien e : EntretienDAO.getAll()) {
-            modeleHistorique.addRow(new Object[]{e.getNumEntr(), e.getNumServ(), e.getImmatriculation(), e.getNomClient(), e.getDateEntretien()});
+            modeleHistorique.addRow(new Object[]{e.getNumEntr(), e.getNumServ(), e.getImmatriculation(), e.getNomClient(), e.getDateEntretien(), "Actions"});
         }
     }
 
-    private void supprimerSelection() {
-        int row = tableau.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selectionnez un entretien dans l'historique !");
-            return;
+    class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
+        private JButton btnModifier, btnSupprimer;
+        public ButtonRenderer() {
+            setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
+            setBackground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
+            btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
+            btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            add(btnModifier); add(btnSupprimer);
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer cet entretien ?", "Confirmation", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            String numEntr = (String) modeleHistorique.getValueAt(row, 0);
-            EntretienDAO.supprimer(numEntr);
-            rafraichirHistorique();
+        @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return this;
         }
+    }
+
+    class ButtonEditor extends DefaultCellEditor {
+        private JPanel panel;
+        private JButton btnModifier, btnSupprimer;
+        private int currentRow;
+        public ButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+            panel.setBackground(Color.WHITE);
+            btnModifier = MacButton.ghost("Modifier");
+            btnModifier.setPreferredSize(new Dimension(80, 28));
+            btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            btnSupprimer = MacButton.danger("Supprimer");
+            btnSupprimer.setPreferredSize(new Dimension(80, 28));
+            btnSupprimer.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            panel.add(btnModifier); panel.add(btnSupprimer);
+
+            btnModifier.addActionListener(e -> {
+                fireEditingStopped();
+                String numEntr = (String) modeleHistorique.getValueAt(currentRow, 0);
+                String serviceActuel = (String) modeleHistorique.getValueAt(currentRow, 1);
+                String voitureActuelle = (String) modeleHistorique.getValueAt(currentRow, 2);
+                String clientActuel = (String) modeleHistorique.getValueAt(currentRow, 3);
+
+                JComboBox<String> comboService = new JComboBox<>();
+                List<ServiceEnt> services = ServiceDAO.getAll();
+                int selectIdx = 0;
+                for (int i = 0; i < services.size(); i++) {
+                    ServiceEnt s = services.get(i);
+                    comboService.addItem(s.getService() + " - " + String.format("%,d", s.getPrix()) + " Ar");
+                    if (s.getService().equals(serviceActuel)) selectIdx = i;
+                }
+                if (selectIdx < comboService.getItemCount()) comboService.setSelectedIndex(selectIdx);
+
+                JTextField champClientModif = new JTextField(clientActuel, 15);
+                JTextField champVoitureModif = new JTextField(voitureActuelle, 15);
+
+                JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+                form.add(new JLabel("Client :")); form.add(champClientModif);
+                form.add(new JLabel("Immatriculation :")); form.add(champVoitureModif);
+                form.add(new JLabel("Service :")); form.add(comboService);
+
+                int result = JOptionPane.showConfirmDialog(null, form, "Modifier l'entretien", JOptionPane.OK_CANCEL_OPTION);
+                if (result == JOptionPane.OK_OPTION) {
+                    String newClient = champClientModif.getText().trim();
+                    String newVoiture = champVoitureModif.getText().trim();
+                    if (newClient.isEmpty() || newVoiture.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Tous les champs sont obligatoires !");
+                        return;
+                    }
+                    int newIdx = comboService.getSelectedIndex();
+                    if (newIdx < 0) return;
+                    String newNumServ = services.get(newIdx).getNumServ();
+                    EntretienDAO.modifier(numEntr, newNumServ, newVoiture, newClient);
+                    rafraichirHistorique();
+                }
+            });
+
+            btnSupprimer.addActionListener(e -> {
+                fireEditingStopped();
+                int confirm = JOptionPane.showConfirmDialog(null, "Supprimer cet entretien ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    String numEntr = (String) modeleHistorique.getValueAt(currentRow, 0);
+                    EntretienDAO.supprimer(numEntr);
+                    rafraichirHistorique();
+                }
+            });
+        }
+        @Override public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            currentRow = row;
+            return panel;
+        }
+        @Override public Object getCellEditorValue() { return "Actions"; }
     }
 }

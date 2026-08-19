@@ -44,6 +44,20 @@ public class EntretienDAO {
         }
     }
 
+    public static boolean modifier(String numEntr, String numServ, String immatriculation, String nomClient) {
+        try (Connection conn = ConnexionBD.getConnection();
+             PreparedStatement ps = conn.prepareStatement("UPDATE ENTRETIEN SET numServ=?, Immatriculation_voiture=?, nomClient=? WHERE numEntr=?")) {
+            ps.setString(1, numServ);
+            ps.setString(2, immatriculation);
+            ps.setString(3, nomClient);
+            ps.setString(4, numEntr);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean supprimer(String numEntr) {
         try (Connection conn = ConnexionBD.getConnection();
              PreparedStatement ps = conn.prepareStatement("DELETE FROM ENTRETIEN WHERE numEntr=?")) {
