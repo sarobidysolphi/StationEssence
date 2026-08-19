@@ -253,7 +253,7 @@ public class PageEntretiens extends JPanel {
 
     private void genererPDFFromRecu() {
         try {
-            String chemin = System.getProperty("user.home") + "\\Desktop\\recu_entretien.pdf";
+            String chemin = "C:\\Users\\Solphi\\OneDrive\\Desktop\\recu_entretien.pdf";
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
             PdfDocument pdf = new PdfDocument(writer);
             Document doc = new Document(pdf);

@@ -1,14 +1,9 @@
 package stationessenceswing;
 
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -19,8 +14,6 @@ public class PageAchat extends JPanel {
     private JLabel labelTotal;
     private DefaultTableModel modeleHistorique;
     private StyledTable tableau;
-    private JTextArea zoneRecu;
-    private JButton btnPDF;
     private PlaceholderTextField champRecherche;
 
     public PageAchat() {
@@ -79,40 +72,6 @@ public class PageAchat extends JPanel {
 
         contenu.add(formCard);
 
-        JPanel droite = new JPanel(new BorderLayout());
-        droite.setOpaque(false);
-
-        JPanel recuCard = new JPanel(new BorderLayout()) {
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(0, 0, 0, 8));
-                g2.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 14, 14);
-                g2.setColor(Theme.FOND_CARTE);
-                g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
-            }
-        };
-        recuCard.setOpaque(false);
-        JLabel recuTitre = new JLabel("   Recu de vente");
-        recuTitre.setFont(Theme.POLICE_GRAS);
-        recuTitre.setBorder(new EmptyBorder(8, 4, 8, 0));
-        recuCard.add(recuTitre, BorderLayout.NORTH);
-
-        zoneRecu = new JTextArea();
-        zoneRecu.setEditable(false);
-        zoneRecu.setFont(new Font("Consolas", Font.PLAIN, 13));
-        zoneRecu.setBorder(new EmptyBorder(8, 16, 8, 16));
-        zoneRecu.setText("Aucune vente effectuee.");
-        recuCard.add(new JScrollPane(zoneRecu), BorderLayout.CENTER);
-
-        JPanel basRecu = new JPanel();
-        basRecu.setOpaque(false);
-        btnPDF = MacButton.ghost("Imprimer le recu (PDF)");
-        btnPDF.setEnabled(false);
-        btnPDF.addActionListener(e -> genererPDF());
-        basRecu.add(btnPDF);
-        recuCard.add(basRecu, BorderLayout.SOUTH);
-
         JPanel histCard = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -150,10 +109,7 @@ public class PageAchat extends JPanel {
         tableau = new StyledTable(modeleHistorique);
         histCard.add(new JScrollPane(tableau), BorderLayout.CENTER);
 
-        droite.add(recuCard, BorderLayout.CENTER);
-        droite.add(histCard, BorderLayout.SOUTH);
-        contenu.add(droite);
-
+        contenu.add(histCard);
         add(contenu, BorderLayout.CENTER);
 
         champLitres.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
@@ -193,13 +149,7 @@ public class PageAchat extends JPanel {
             int index = comboProduit.getSelectedIndex();
             if (index >= 0 && !champLitres.getText().isEmpty()) {
                 int litres = Integer.parseInt(champLitres.getText());
-                List<Produit> produits = ProduitDAO.getAll();
-                if (index < produits.size()) {
-                    int prixUnitaire = produits.get(index).getStock() > 0 ? 5200 : 0;
-                    // Note: le prix par litre n'est pas dans la table PRODUIT du sujet, on utilise un prix fixe par defaut
-                    // Pour une application reelle, il faudrait ajouter une colonne prix a la table PRODUIT
-                    labelTotal.setText(String.format("%,d", litres * 5200) + " FCFA");
-                }
+                labelTotal.setText(String.format("%,d", litres * 5200) + " FCFA");
             }
         } catch (Exception e) { labelTotal.setText("0 FCFA"); }
     }
@@ -228,18 +178,6 @@ public class PageAchat extends JPanel {
             Achat achat = new Achat(numAchat, p.getNumProd(), client, litres, dateAujourdhui);
 
             if (AchatDAO.ajouter(achat, p.getNumProd())) {
-                String recu = "****************************\n";
-                recu += "      STATION ESSENCE\n";
-                recu += "****************************\n\n";
-                recu += "Date    : " + dateAujourdhui + "\n";
-                recu += "Client  : " + client + "\n";
-                recu += "----------------------------\n";
-                recu += String.format("%-18s %,10d L\n", p.getDesignation(), litres);
-                recu += "----------------------------\n\n";
-                recu += "   Merci de votre visite";
-                zoneRecu.setText(recu);
-                btnPDF.setEnabled(true);
-
                 rafraichirHistorique();
                 JOptionPane.showMessageDialog(this, "Vente enregistree !");
                 champClient.setText(""); champLitres.setText(""); labelTotal.setText("0 FCFA");
@@ -249,20 +187,6 @@ public class PageAchat extends JPanel {
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre valide pour les litres !");
-        }
-    }
-
-    private void genererPDF() {
-        try {
-            String chemin = System.getProperty("user.home") + "\\Desktop\\recu_vente.pdf";
-            PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
-            PdfDocument pdf = new PdfDocument(writer);
-            Document doc = new Document(pdf);
-            doc.add(new Paragraph(zoneRecu.getText()));
-            doc.close();
-            JOptionPane.showMessageDialog(this, "PDF genere sur le bureau !");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erreur PDF : " + e.getMessage());
         }
     }
 }
