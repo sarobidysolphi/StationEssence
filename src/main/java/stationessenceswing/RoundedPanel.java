@@ -9,7 +9,7 @@ public class RoundedPanel extends JPanel {
     private Color ombreCouleur;
 
     public RoundedPanel(int rayon) {
-        this(rayon, Theme.FOND_CARTE, new Color(0, 0, 0, 20));
+        this(rayon, Theme.FOND_CARTE, new Color(0, 0, 0, 40));
     }
 
     public RoundedPanel(int rayon, Color fond, Color ombre) {

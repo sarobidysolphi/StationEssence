@@ -178,7 +178,7 @@ public class PageTableauBord extends JPanel {
                 JLabel msg = new JLabel("  " + statutText + " : " + p.getDesignation() + " (" + p.getStock() + " L)");
                 msg.setFont(Theme.POLICE_NORMALE);
                 msg.setOpaque(true);
-                msg.setBackground(p.getStock() <= 0 ? new Color(255, 59, 48, 15) : new Color(255, 149, 0, 15));
+                msg.setBackground(p.getStock() <= 0 ? new Color(239, 68, 68, 30) : new Color(245, 158, 11, 30));
                 msg.setForeground(p.getStock() <= 0 ? Theme.ROUGE_ACCENT : Theme.ORANGE_ACCENT);
                 msg.setBorder(new EmptyBorder(4, 4, 4, 4));
                 alertesPanel.add(msg);

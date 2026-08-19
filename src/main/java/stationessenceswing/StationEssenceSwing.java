@@ -17,6 +17,26 @@ public class StationEssenceSwing {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            UIManager.put("Panel.background", Theme.FOND_CLAIR);
+            UIManager.put("TextField.background", Theme.FOND_CARTE);
+            UIManager.put("TextField.foreground", Theme.TEXTE_FONCE);
+            UIManager.put("TextField.caretForeground", Theme.BLEU_ACCENT);
+            UIManager.put("TextField.border", new javax.swing.border.LineBorder(Theme.BORDURE, 1));
+            UIManager.put("ComboBox.background", Theme.FOND_CARTE);
+            UIManager.put("ComboBox.foreground", Theme.TEXTE_FONCE);
+            UIManager.put("ComboBox.selectionBackground", Theme.BLEU_ACCENT);
+            UIManager.put("ComboBox.selectionForeground", Theme.TEXTE_FONCE);
+            UIManager.put("List.background", Theme.FOND_CARTE);
+            UIManager.put("List.foreground", Theme.TEXTE_FONCE);
+            UIManager.put("List.selectionBackground", Theme.BLEU_ACCENT);
+            UIManager.put("List.selectionForeground", Theme.TEXTE_FONCE);
+            UIManager.put("OptionPane.background", Theme.FOND_CLAIR);
+            UIManager.put("OptionPane.messageForeground", Theme.TEXTE_FONCE);
+            UIManager.put("OptionPane.messageFont", Theme.POLICE_NORMALE);
+            UIManager.put("CheckBox.foreground", Theme.TEXTE_FONCE);
+            UIManager.put("ScrollPane.background", Theme.FOND_CLAIR);
+            UIManager.put("Viewport.background", Theme.FOND_CARTE);
+
             fenetre = new JFrame();
             fenetre.setSize(1150, 750);
             fenetre.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,7 +60,7 @@ public class StationEssenceSwing {
 
             JLabel titreApp = new JLabel("  Station Essence");
             titreApp.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            titreApp.setForeground(Theme.TEXTE_FONCE);
+            titreApp.setForeground(Theme.BLEU_ACCENT);
 
             JPanel boutonsControle = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 5));
             boutonsControle.setOpaque(false);
@@ -84,7 +104,7 @@ public class StationEssenceSwing {
 
             JLabel logoLabel = new JLabel("\u26FD  Station Essence");
             logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-            logoLabel.setForeground(Color.WHITE);
+            logoLabel.setForeground(Theme.BLEU_ACCENT);
             logoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             logoLabel.setBorder(new EmptyBorder(0, 8, 4, 0));
             menuPanel.add(logoLabel);
@@ -139,7 +159,7 @@ public class StationEssenceSwing {
                         dernierBoutonActif.setForeground(Theme.TEXTE_TERTIAIRE);
                     }
                     btn.setBackground(Theme.SIDEBAR_ACTIF);
-                    btn.setForeground(Color.WHITE);
+                    btn.setForeground(Theme.TEXTE_FONCE);
                     dernierBoutonActif = btn;
 
                     CardLayout cl = (CardLayout)(contentPanel.getLayout());
@@ -240,7 +260,7 @@ public class StationEssenceSwing {
             public void mouseEntered(MouseEvent e) {
                 if (btn != dernierBoutonActif) {
                     btn.setBackground(Theme.SIDEBAR_HOVER);
-                    btn.setForeground(Color.WHITE);
+                    btn.setForeground(Theme.TEXTE_FONCE);
                 }
             }
             @Override

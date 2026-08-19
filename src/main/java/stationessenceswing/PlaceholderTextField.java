@@ -17,6 +17,8 @@ public class PlaceholderTextField extends JTextField implements FocusListener {
         this.showingPlaceholder = true;
         this.setForeground(Theme.TEXTE_SECONDAIRE);
         this.setFont(Theme.POLICE_NORMALE);
+        this.setBackground(Theme.FOND_CARTE);
+        this.setCaretColor(Theme.BLEU_ACCENT);
         this.setBorder(BorderFactory.createCompoundBorder(
             new RoundedBorder(8, Theme.BORDURE),
             BorderFactory.createEmptyBorder(0, 10, 0, 10)

@@ -164,7 +164,7 @@ public class PageStock extends JPanel {
         private JButton btnModifier, btnSupprimer;
         public ButtonRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 12, 0));
-            setBackground(Color.WHITE);
+            setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(70, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -185,7 +185,7 @@ public class PageStock extends JPanel {
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
-            panel.setBackground(Color.WHITE);
+            panel.setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(70, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));

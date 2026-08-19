@@ -72,7 +72,7 @@ public class PageProduits extends JPanel {
 
         JScrollPane scroll = new JScrollPane(tableau);
         scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.getViewport().setBackground(Theme.FOND_CARTE);
         tableCard.add(scroll, BorderLayout.CENTER);
 
         add(tableCard, BorderLayout.CENTER);
@@ -142,7 +142,7 @@ public class PageProduits extends JPanel {
                     JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     label.setHorizontalAlignment(SwingConstants.CENTER);
                     label.setOpaque(true);
-                    label.setBackground(isSelected ? table.getSelectionBackground() : (row % 2 == 0 ? Color.WHITE : Theme.TABLE_LIGNE_ALTERNE));
+                    label.setBackground(isSelected ? table.getSelectionBackground() : (row % 2 == 0 ? Theme.FOND_CARTE : Theme.TABLE_LIGNE_ALTERNE));
                     label.setForeground(c);
                     label.setFont(Theme.POLICE_GRAS);
                     label.setText("  " + value + "  ");
@@ -156,7 +156,7 @@ public class PageProduits extends JPanel {
         private JButton btnModifier, btnSupprimer;
         public ButtonRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
-            setBackground(Color.WHITE);
+            setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -177,7 +177,7 @@ public class PageProduits extends JPanel {
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-            panel.setBackground(Color.WHITE);
+            panel.setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));

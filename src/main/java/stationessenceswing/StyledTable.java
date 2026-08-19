@@ -11,6 +11,8 @@ public class StyledTable extends JTable {
         super(model);
         setFont(Theme.POLICE_NORMALE);
         setRowHeight(40);
+        setBackground(Theme.FOND_CARTE);
+        setForeground(Theme.TEXTE_FONCE);
         setGridColor(Theme.BORDURE_CLAIRE);
         setSelectionBackground(Theme.TABLE_SELECTION);
         setSelectionForeground(Theme.TEXTE_FONCE);
@@ -31,7 +33,7 @@ public class StyledTable extends JTable {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setBorder(new EmptyBorder(0, 12, 0, 12));
                 if (!isSelected) {
-                    setBackground(row % 2 == 0 ? Color.WHITE : Theme.TABLE_LIGNE_ALTERNE);
+                    setBackground(row % 2 == 0 ? Theme.FOND_CARTE : Theme.TABLE_LIGNE_ALTERNE);
                     setForeground(Theme.TEXTE_FONCE);
                 }
                 return this;

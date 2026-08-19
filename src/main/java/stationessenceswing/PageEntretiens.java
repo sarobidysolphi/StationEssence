@@ -70,8 +70,8 @@ public class PageEntretiens extends JPanel {
         gbc.gridx = 0; gbc.gridy = 2; formCard.add(new JLabel("Services :"), gbc);
         gbc.gridx = 1; gbc.gridy = 2;
         checkPanel = new JPanel(new GridLayout(0, 1));
-        checkPanel.setBackground(Color.WHITE);
-        checkPanel.setBorder(BorderFactory.createLineBorder(Theme.BORDURE_CLAIRE));
+        checkPanel.setBackground(Theme.FOND_CARTE);
+        checkPanel.setBorder(BorderFactory.createLineBorder(Theme.BORDURE));
         formCard.add(checkPanel, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; formCard.add(new JLabel("Total :"), gbc);
@@ -124,6 +124,8 @@ public class PageEntretiens extends JPanel {
         zoneRecu = new JTextArea();
         zoneRecu.setEditable(false);
         zoneRecu.setFont(new Font("Consolas", Font.PLAIN, 13));
+        zoneRecu.setBackground(Theme.FOND_CARTE);
+        zoneRecu.setForeground(Theme.TEXTE_FONCE);
         zoneRecu.setBorder(new EmptyBorder(8, 16, 8, 16));
         zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
         recuCard.add(new JScrollPane(zoneRecu), BorderLayout.CENTER);
@@ -318,7 +320,7 @@ public class PageEntretiens extends JPanel {
         private JButton btnModifier, btnSupprimer;
         public ButtonRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
-            setBackground(Color.WHITE);
+            setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -339,7 +341,7 @@ public class PageEntretiens extends JPanel {
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-            panel.setBackground(Color.WHITE);
+            panel.setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));

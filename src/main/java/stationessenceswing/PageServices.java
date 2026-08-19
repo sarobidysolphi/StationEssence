@@ -72,7 +72,7 @@ public class PageServices extends JPanel {
 
         JScrollPane scroll = new JScrollPane(tableau);
         scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.getViewport().setBackground(Theme.FOND_CARTE);
         tableCard.add(scroll, BorderLayout.CENTER);
 
         add(tableCard, BorderLayout.CENTER);
@@ -130,7 +130,7 @@ public class PageServices extends JPanel {
         private JButton btnModifier, btnSupprimer;
         public ButtonRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
-            setBackground(Color.WHITE);
+            setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -151,7 +151,7 @@ public class PageServices extends JPanel {
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-            panel.setBackground(Color.WHITE);
+            panel.setBackground(Theme.FOND_CARTE);
             btnModifier = MacButton.ghost("Modifier");
             btnModifier.setPreferredSize(new Dimension(80, 28));
             btnModifier.setFont(new Font("Segoe UI", Font.BOLD, 11));

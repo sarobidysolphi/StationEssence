@@ -103,7 +103,7 @@ public class MacButton extends JButton {
     }
 
     public static MacButton ghost(String text) {
-        MacButton btn = new MacButton(text, new Color(240, 240, 245), new Color(225, 225, 230));
+        MacButton btn = new MacButton(text, new Color(40, 40, 65), new Color(50, 50, 75));
         btn.setForeground(Theme.TEXTE_FONCE);
         return btn;
     }
