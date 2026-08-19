@@ -122,7 +122,7 @@ public class PageAchat extends JPanel {
         remplirCombo();
     }
 
-    private void remplirCombo() {
+    public void remplirCombo() {
         comboProduit.removeAllItems();
         for (Produit p : ProduitDAO.getAll()) {
             comboProduit.addItem(p.getNumProd() + " - " + p.getDesignation() + " (" + p.getStock() + " L)");

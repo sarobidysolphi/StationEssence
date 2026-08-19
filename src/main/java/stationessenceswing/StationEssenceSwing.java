@@ -154,8 +154,12 @@ public class StationEssenceSwing {
                             ((PageProduits) c).rafraichirTableau();
                         if (c instanceof PageServices && nom.equals("Services"))
                             ((PageServices) c).rafraichirTableau();
-                        if (c instanceof PageEntretiens && nom.equals("Entretiens"))
+                        if (c instanceof PageAchat && nom.equals("Vente carburant"))
+                            ((PageAchat) c).remplirCombo();
+                        if (c instanceof PageEntretiens && nom.equals("Entretiens")) {
                             ((PageEntretiens) c).genererCheckBoxes();
+                            ((PageEntretiens) c).rafraichirHistorique();
+                        }
                         if (c instanceof PageRecettes && nom.equals("Recettes"))
                             ((PageRecettes) c).rafraichir();
                         if (c instanceof PageStatistiques && nom.equals("Statistiques"))

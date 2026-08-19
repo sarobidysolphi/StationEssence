@@ -58,9 +58,10 @@ public class EntretienDAO {
     public static String genererId() {
         try (Connection conn = ConnexionBD.getConnection();
              Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM ENTRETIEN")) {
+             ResultSet rs = st.executeQuery("SELECT MAX(CAST(SUBSTRING(numEntr, 3) AS UNSIGNED)) FROM ENTRETIEN")) {
             if (rs.next()) {
-                return "ET" + String.format("%03d", rs.getInt(1) + 1);
+                int max = rs.getInt(1);
+                return "ET" + String.format("%03d", max + 1);
             }
         } catch (SQLException e) {
             e.printStackTrace();

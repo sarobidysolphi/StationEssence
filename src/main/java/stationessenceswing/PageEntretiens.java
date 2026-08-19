@@ -45,7 +45,6 @@ public class PageEntretiens extends JPanel {
         JPanel contenu = new JPanel(new GridLayout(1, 2, 16, 0));
         contenu.setBackground(Theme.FOND_CLAIR);
 
-        // --- GAUCHE : Formulaire ---
         JPanel formCard = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -86,16 +85,17 @@ public class PageEntretiens extends JPanel {
         JButton btnValider = MacButton.primary("Enregistrer");
         btnValider.addActionListener(e -> validerEntretien());
         btnPanel.add(btnValider);
+        JButton btnNouveau = MacButton.ghost("Nouveau");
+        btnNouveau.addActionListener(e -> reinitialiserFormulaire());
+        btnPanel.add(btnNouveau);
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         formCard.add(btnPanel, gbc);
 
         contenu.add(formCard);
 
-        // --- DROITE : Recu en haut + Historique en bas ---
         JPanel droite = new JPanel(new BorderLayout(0, 12));
         droite.setOpaque(false);
 
-        // Recu card (en haut)
         JPanel recuCard = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -128,7 +128,6 @@ public class PageEntretiens extends JPanel {
         zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
         recuCard.add(new JScrollPane(zoneRecu), BorderLayout.CENTER);
 
-        // Historique card (en bas)
         JPanel histCard = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -247,6 +246,11 @@ public class PageEntretiens extends JPanel {
             return;
         }
 
+        if (voiture.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Veuillez entrer l'immatriculation !");
+            return;
+        }
+
         boolean hasSelection = false;
         for (JCheckBox chk : checkBoxServices) {
             if (chk.isSelected()) { hasSelection = true; break; }
@@ -256,6 +260,7 @@ public class PageEntretiens extends JPanel {
             return;
         }
 
+        boolean succes = true;
         for (JCheckBox chk : checkBoxServices) {
             if (chk.isSelected()) {
                 ServiceEnt s = (ServiceEnt) chk.getClientProperty("service");
@@ -263,19 +268,35 @@ public class PageEntretiens extends JPanel {
                     String numEntr = EntretienDAO.genererId();
                     String dateAujourdhui = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
                     Entretien ent = new Entretien(numEntr, s.getService(), voiture, nom, dateAujourdhui);
-                    EntretienDAO.ajouter(ent, s.getNumServ());
+                    if (!EntretienDAO.ajouter(ent, s.getNumServ())) {
+                        succes = false;
+                    }
                 }
             }
         }
 
         rafraichirHistorique();
-        champNom.setText(""); champVoiture.setText("");
+
+        if (succes) {
+            JOptionPane.showMessageDialog(this, "Entretien enregistre avec succes !");
+        } else {
+            JOptionPane.showMessageDialog(this, "Erreur lors de l'enregistrement !");
+        }
+    }
+
+    private void reinitialiserFormulaire() {
+        champNom.setText("");
+        champVoiture.setText("");
         for (JCheckBox chk : checkBoxServices) chk.setSelected(false);
         labelTotal.setText("0 Ar");
         zoneRecu.setText("Remplissez le formulaire et cochez des services\npour voir le recu ici.");
     }
 
     private void genererPDFFromRecu() {
+        if (zoneRecu.getText().contains("Remplissez le formulaire")) {
+            JOptionPane.showMessageDialog(this, "Enregistrez d'abord un entretien pour generer le PDF !");
+            return;
+        }
         try {
             String chemin = "C:\\Users\\Solphi\\OneDrive\\Desktop\\recu_entretien.pdf";
             PdfWriter writer = new PdfWriter(new FileOutputStream(chemin));
@@ -291,7 +312,7 @@ public class PageEntretiens extends JPanel {
         }
     }
 
-    private void rafraichirHistorique() {
+    public void rafraichirHistorique() {
         modeleHistorique.setRowCount(0);
         for (Entretien e : EntretienDAO.getAll()) {
             modeleHistorique.addRow(new Object[]{e.getNumEntr(), e.getNumServ(), e.getImmatriculation(), e.getNomClient(), e.getDateEntretien()});
