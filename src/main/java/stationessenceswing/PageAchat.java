@@ -195,7 +195,7 @@ public class PageAchat extends JPanel {
     class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
         private JButton btnSupprimer;
         public ButtonRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 4, 0));
+            setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
             setBackground(Color.WHITE);
             btnSupprimer = MacButton.danger("Supprimer");
             btnSupprimer.setPreferredSize(new Dimension(90, 28));
@@ -213,7 +213,7 @@ public class PageAchat extends JPanel {
         private int currentRow;
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
             panel.setBackground(Color.WHITE);
             btnSupprimer = MacButton.danger("Supprimer");
             btnSupprimer.setPreferredSize(new Dimension(90, 28));
