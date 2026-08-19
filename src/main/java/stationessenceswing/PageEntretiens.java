@@ -240,7 +240,6 @@ public class PageEntretiens extends JPanel {
 
         zoneRecu.setText(recu.toString());
     }
-    }
 
     private void validerEntretien() {
         String nom = champNom.getText().trim();
